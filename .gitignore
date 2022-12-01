@@ -1,3 +1,5 @@
 *.pdb
 *.exe*
 real_inputs/
+*.o
+
