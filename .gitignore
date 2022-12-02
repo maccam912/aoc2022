@@ -4,3 +4,4 @@ real_inputs/
 *.o
 zig-cache/
 zig-out/
+.DS_Store

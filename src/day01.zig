@@ -90,14 +90,14 @@ fn max_calories_top_three(l: *std.ArrayList(Elf)) u64 {
     return max.a+max.b+max.c;
 }
 
-pub export fn part_a(allocator: std.mem.Allocator) !u64 {
+pub fn part_a(allocator: std.mem.Allocator) !u64 {
     const input_str = comptime input_text();
     var elves = try parse_elves(allocator, input_str);
     var max_cals = max_calories(&elves);
     return max_cals;
 }
 
-pub export fn part_b(allocator: std.mem.Allocator) !u64 {
+pub fn part_b(allocator: std.mem.Allocator) !u64 {
     const input_str = comptime input_text();
     var elves = try parse_elves(allocator, input_str);
     var max_cals = max_calories_top_three(&elves);
