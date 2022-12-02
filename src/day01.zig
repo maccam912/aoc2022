@@ -1,6 +1,6 @@
 const std = @import("std");
 
-const testing: bool = false;
+const testing = false;
 
 fn input_text() []const u8 {
     if (testing) {
@@ -84,23 +84,22 @@ fn max_calories_top_three(l: *std.ArrayList(Elf)) u64 {
 
         sort_vals(&max);
 
-        std.log.debug("here item {any} max {any}", .{item, max});
-        std.log.debug("============", .{});
         item = l.popOrNull();
     }
 
     return max.a+max.b+max.c;
 }
 
-pub fn main() !void {
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
-    const allocator = arena.allocator();
-
+pub export fn part_a(allocator: std.mem.Allocator) !u64 {
     const input_str = comptime input_text();
     var elves = try parse_elves(allocator, input_str);
-    var cloned_elves = try elves.clone();
     var max_cals = max_calories(&elves);
-    var max_cals_top_three = max_calories_top_three(&cloned_elves);
-    std.log.debug("A: {any}\tB: {any}", .{max_cals, max_cals_top_three});
+    return max_cals;
+}
+
+pub export fn part_b(allocator: std.mem.Allocator) !u64 {
+    const input_str = comptime input_text();
+    var elves = try parse_elves(allocator, input_str);
+    var max_cals = max_calories_top_three(&elves);
+    return max_cals;
 }

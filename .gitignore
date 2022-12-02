@@ -2,4 +2,5 @@
 *.exe*
 real_inputs/
 *.o
-
+zig-cache/
+zig-out/
