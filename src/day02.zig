@@ -1,6 +1,6 @@
 const std = @import("std");
 
-const testing = false;
+const testing = true;
 
 fn input_text() []const u8 {
     if (testing) {
