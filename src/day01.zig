@@ -1,9 +1,8 @@
 const std = @import("std");
-
-const testing = true;
+const constants = @import("constants.zig");
 
 fn input_text() []const u8 {
-    if (testing) {
+    if (constants.TESTING) {
         return @embedFile("test_inputs/day01.txt");
     } else {
         return @embedFile("real_inputs/day01.txt");
