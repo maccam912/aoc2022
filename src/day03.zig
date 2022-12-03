@@ -75,3 +75,23 @@ pub fn part_a(allocator: std.mem.Allocator) !u64 {
     }
     return sum;
 }
+
+pub fn part_b() !u64 {
+    const input = comptime input_text();
+    var lines = std.mem.tokenize(u8, input, "\n");
+    var sum: u64 = 0;
+    while (lines.next()) |a| {
+        var b = lines.next().?;
+        var c = lines.next().?;
+        var a_rucksack = parse_rucksack(a);
+        var a_value = a_rucksack.left | a_rucksack.right;
+        var b_rucksack = parse_rucksack(b);
+        var b_value = b_rucksack.left | b_rucksack.right;
+        var c_rucksack = parse_rucksack(c);
+        var c_value = c_rucksack.left | c_rucksack.right;
+        var common_element = a_value & b_value & c_value;
+        var common_priority: u64 = std.math.log(u64, 2, common_element)+1;
+        sum += common_priority;
+    }
+    return sum;
+}

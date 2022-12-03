@@ -19,7 +19,7 @@ pub fn main() !void {
     std.log.info("Day 2 Part B = {any}", .{b2});
 
     var a3: u64 = try day03.part_a(allocator);
-    // var b2: u64 = try day03.part_b(allocator);
+    var b3: u64 = try day03.part_b();
     std.log.info("Day 3 Part A = {any}", .{a3});
-    // std.log.info("Day 3 Part B = {any}", .{b2});
+    std.log.info("Day 3 Part B = {any}", .{b3});
 }
