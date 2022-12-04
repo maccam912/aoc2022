@@ -25,4 +25,9 @@ pub fn main() !void {
     var b3: u64 = try day03.part_b();
     try stdout.print("Day 3 Part A = {any}\n", .{a3});
     try stdout.print("Day 3 Part B = {any}\n", .{b3});
+
+    var a4: u64 = try day04.part_a(allocator);
+    var b4: u64 = try day04.part_b(allocator);
+    try stdout.print("Day 4 Part A = {any}\n", .{a4});
+    try stdout.print("Day 4 Part B = {any}\n", .{b4});
 }
