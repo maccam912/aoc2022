@@ -10,24 +10,23 @@ pub fn main() !void {
     const allocator = arena.allocator();
     const stdout = std.io.getStdOut().writer();
 
-
-    var a1: u64 = try day01.part_a(allocator);
-    var b1: u64 = try day01.part_b(allocator);
+    var a1: u64 = try day01.partA(allocator);
+    var b1: u64 = try day01.partB(allocator);
     try stdout.print("Day 1 Part A = {any}\n", .{a1});
     try stdout.print("Day 1 Part B = {any}\n", .{b1});
 
-    var a2: u64 = try day02.part_a(allocator);
-    var b2: u64 = try day02.part_b(allocator);
+    var a2: u64 = try day02.partA(allocator);
+    var b2: u64 = try day02.partB(allocator);
     try stdout.print("Day 2 Part A = {any}\n", .{a2});
     try stdout.print("Day 2 Part B = {any}\n", .{b2});
 
-    var a3: u64 = try day03.part_a(allocator);
-    var b3: u64 = try day03.part_b();
+    var a3: u64 = try day03.partA(allocator);
+    var b3: u64 = try day03.partB();
     try stdout.print("Day 3 Part A = {any}\n", .{a3});
     try stdout.print("Day 3 Part B = {any}\n", .{b3});
 
-    var a4: u64 = try day04.part_a(allocator);
-    var b4: u64 = try day04.part_b(allocator);
+    var a4: u64 = try day04.partA(allocator);
+    var b4: u64 = try day04.partB(allocator);
     try stdout.print("Day 4 Part A = {any}\n", .{a4});
     try stdout.print("Day 4 Part B = {any}\n", .{b4});
 }

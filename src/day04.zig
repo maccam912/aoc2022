@@ -1,7 +1,7 @@
 const std = @import("std");
 const constants = @import("constants.zig");
 
-fn input_text() []const u8 {
+fn inputText() []const u8 {
     if (constants.TESTING) {
         return @embedFile("test_inputs/day04.txt");
     } else {
@@ -19,7 +19,7 @@ const Pair = struct {
     b: Elf,
 };
 
-fn parse_input(allocator: std.mem.Allocator, input: []const u8) !std.ArrayList(Pair) {
+fn parseInput(allocator: std.mem.Allocator, input: []const u8) !std.ArrayList(Pair) {
     const L = std.ArrayList(Pair);
     var list = L.init(allocator);
     var lines = std.mem.split(u8, input, "\n");
@@ -33,15 +33,15 @@ fn parse_input(allocator: std.mem.Allocator, input: []const u8) !std.ArrayList(P
         var a_end = try std.fmt.parseInt(u64, a_tokens.next().?, 10);
         var b_start = try std.fmt.parseInt(u64, b_tokens.next().?, 10);
         var b_end = try std.fmt.parseInt(u64, b_tokens.next().?, 10);
-        var elf_a = Elf{.range_start = a_start, .range_end = a_end};
-        var elf_b = Elf{.range_start = b_start, .range_end = b_end};
-        var pair = Pair{.a = elf_a, .b = elf_b};
+        var elf_a = Elf{ .range_start = a_start, .range_end = a_end };
+        var elf_b = Elf{ .range_start = b_start, .range_end = b_end };
+        var pair = Pair{ .a = elf_a, .b = elf_b };
         try list.append(pair);
     }
     return list;
 }
 
-fn pair_has_entire_overlap(p: *const Pair) bool {
+fn pairHasEntireOverlap(p: *const Pair) bool {
     if (p.b.range_start >= p.a.range_start and p.b.range_end <= p.a.range_end) {
         // b is in a
         return true;
@@ -53,7 +53,7 @@ fn pair_has_entire_overlap(p: *const Pair) bool {
     }
 }
 
-fn pair_has_any_overlap(p: *const Pair) bool {
+fn pairHasAnyOverlap(p: *const Pair) bool {
     if (p.b.range_start <= p.a.range_end and p.b.range_end >= p.a.range_start) {
         return true;
     } else if (p.a.range_start <= p.b.range_end and p.a.range_end >= p.b.range_start) {
@@ -63,24 +63,24 @@ fn pair_has_any_overlap(p: *const Pair) bool {
     }
 }
 
-pub fn part_a(allocator: std.mem.Allocator) !u64 {
-    var input_str = comptime input_text();
-    var parsed_input = try parse_input(allocator, input_str);
+pub fn partA(allocator: std.mem.Allocator) !u64 {
+    var input_str = comptime inputText();
+    var parsed_input = try parseInput(allocator, input_str);
     var sum: u64 = 0;
     for (parsed_input.toOwnedSlice()) |pair| {
-        if (pair_has_entire_overlap(&pair)) {
+        if (pairHasEntireOverlap(&pair)) {
             sum += 1;
         }
     }
     return sum;
 }
 
-pub fn part_b(allocator: std.mem.Allocator) !u64 {
-    var input_str = comptime input_text();
-    var parsed_input = try parse_input(allocator, input_str);
+pub fn partB(allocator: std.mem.Allocator) !u64 {
+    var input_str = comptime inputText();
+    var parsed_input = try parseInput(allocator, input_str);
     var sum: u64 = 0;
     for (parsed_input.toOwnedSlice()) |pair| {
-        if (pair_has_any_overlap(&pair)) {
+        if (pairHasAnyOverlap(&pair)) {
             sum += 1;
         }
     }

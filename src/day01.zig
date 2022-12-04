@@ -1,7 +1,7 @@
 const std = @import("std");
 const constants = @import("constants.zig");
 
-fn input_text() []const u8 {
+fn inputText() []const u8 {
     if (constants.TESTING) {
         return @embedFile("test_inputs/day01.txt");
     } else {
@@ -9,11 +9,9 @@ fn input_text() []const u8 {
     }
 }
 
-const Elf = struct {
-    calories: u64
-};
+const Elf = struct { calories: u64 };
 
-fn parse_elves(allocator: std.mem.Allocator, input: []const u8) !std.ArrayList(Elf) {
+fn parseElves(allocator: std.mem.Allocator, input: []const u8) !std.ArrayList(Elf) {
     const L = std.ArrayList(Elf);
     var list = L.init(allocator);
     var calories_sum: u64 = 0;
@@ -22,7 +20,7 @@ fn parse_elves(allocator: std.mem.Allocator, input: []const u8) !std.ArrayList(E
     var line: ?[]const u8 = lines.first();
     while (line != null) {
         if (line.?.len == 0) {
-            var elf = Elf{.calories = calories_sum};
+            var elf = Elf{ .calories = calories_sum };
             try list.append(elf);
             calories_sum = 0;
         } else {
@@ -33,13 +31,13 @@ fn parse_elves(allocator: std.mem.Allocator, input: []const u8) !std.ArrayList(E
         line = lines.next();
     }
     // Add the last in progress elf
-    var elf = Elf{.calories = calories_sum};
+    var elf = Elf{ .calories = calories_sum };
     try list.append(elf);
 
     return list;
 }
 
-fn max_calories(l: *std.ArrayList(Elf)) u64 {
+fn maxCalories(l: *std.ArrayList(Elf)) u64 {
     var max_calories_so_far: u64 = 0;
     var item = l.popOrNull();
     while (item != null) {
@@ -52,7 +50,7 @@ fn max_calories(l: *std.ArrayList(Elf)) u64 {
     return max_calories_so_far;
 }
 
-fn sort_vals(max: *Triple) void {
+fn sortVals(max: *Triple) void {
     if (max.a < max.b) {
         const tmp = max.a;
         max.a = max.b;
@@ -71,8 +69,8 @@ const Triple = struct {
     c: u64,
 };
 
-fn max_calories_top_three(l: *std.ArrayList(Elf)) u64 {
-    var max: Triple = Triple{.a = 0, .b = 0, .c = 0};
+fn maxCaloriesTopThree(l: *std.ArrayList(Elf)) u64 {
+    var max: Triple = Triple{ .a = 0, .b = 0, .c = 0 };
     var item = l.popOrNull();
     while (item != null) {
         if (item.?.calories > max.c) {
@@ -81,24 +79,24 @@ fn max_calories_top_three(l: *std.ArrayList(Elf)) u64 {
             max.a = item.?.calories;
         }
 
-        sort_vals(&max);
+        sortVals(&max);
 
         item = l.popOrNull();
     }
 
-    return max.a+max.b+max.c;
+    return max.a + max.b + max.c;
 }
 
-pub fn part_a(allocator: std.mem.Allocator) !u64 {
-    const input_str = comptime input_text();
-    var elves = try parse_elves(allocator, input_str);
-    var max_cals = max_calories(&elves);
+pub fn partA(allocator: std.mem.Allocator) !u64 {
+    const input_str = comptime inputText();
+    var elves = try parseElves(allocator, input_str);
+    var max_cals = maxCalories(&elves);
     return max_cals;
 }
 
-pub fn part_b(allocator: std.mem.Allocator) !u64 {
-    const input_str = comptime input_text();
-    var elves = try parse_elves(allocator, input_str);
-    var max_cals = max_calories_top_three(&elves);
+pub fn partB(allocator: std.mem.Allocator) !u64 {
+    const input_str = comptime inputText();
+    var elves = try parseElves(allocator, input_str);
+    var max_cals = maxCaloriesTopThree(&elves);
     return max_cals;
 }

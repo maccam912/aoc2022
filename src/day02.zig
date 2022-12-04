@@ -1,7 +1,7 @@
 const std = @import("std");
 const constants = @import("constants.zig");
 
-fn input_text() []const u8 {
+fn inputText() []const u8 {
     if (constants.TESTING) {
         return @embedFile("test_inputs/day02.txt");
     } else {
@@ -14,7 +14,7 @@ const Game = struct {
     me: u8,
 };
 
-fn parse_games(allocator: std.mem.Allocator, input: []const u8) !std.ArrayList(Game) {
+fn parseGames(allocator: std.mem.Allocator, input: []const u8) !std.ArrayList(Game) {
     const L = std.ArrayList(Game);
     var list = L.init(allocator);
 
@@ -23,14 +23,14 @@ fn parse_games(allocator: std.mem.Allocator, input: []const u8) !std.ArrayList(G
         var parts = std.mem.tokenize(u8, line, " ");
         var opponent = parts.next().?[0] - 64;
         var me = parts.next().?[0] - 87;
-        var g = Game{.elf = opponent, .me = me};
+        var g = Game{ .elf = opponent, .me = me };
         try list.append(g);
     }
 
     return list;
 }
 
-fn score_a(games: *std.ArrayList(Game)) u64 {
+fn scoreA(games: *std.ArrayList(Game)) u64 {
     var games_slice = games.toOwnedSlice();
     var my_score: u64 = 0;
     for (games_slice) |g| {
@@ -50,7 +50,7 @@ fn score_a(games: *std.ArrayList(Game)) u64 {
     return my_score;
 }
 
-fn score_b(games: *std.ArrayList(Game)) u64 {
+fn scoreB(games: *std.ArrayList(Game)) u64 {
     var games_slice = games.toOwnedSlice();
     var my_score: u64 = 0;
     var me: u64 = 0;
@@ -90,16 +90,16 @@ fn score_b(games: *std.ArrayList(Game)) u64 {
     return my_score;
 }
 
-pub fn part_a(allocator: std.mem.Allocator) !u64 {
-    const input = comptime input_text();
-    var games_a = try parse_games(allocator, input);
-    var my_score = score_a(&games_a);
+pub fn partA(allocator: std.mem.Allocator) !u64 {
+    const input = comptime inputText();
+    var games_a = try parseGames(allocator, input);
+    var my_score = scoreA(&games_a);
     return my_score;
 }
 
-pub fn part_b(allocator: std.mem.Allocator) !u64 {
-    const input = comptime input_text();
-    var games_b = try parse_games(allocator, input);
-    var my_score = score_b(&games_b);
+pub fn partB(allocator: std.mem.Allocator) !u64 {
+    const input = comptime inputText();
+    var games_b = try parseGames(allocator, input);
+    var my_score = scoreB(&games_b);
     return my_score;
 }
