@@ -3,6 +3,7 @@ const day01 = @import("day01.zig");
 const day02 = @import("day02.zig");
 const day03 = @import("day03.zig");
 const day04 = @import("day04.zig");
+const day05 = @import("day05.zig");
 
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
@@ -29,4 +30,9 @@ pub fn main() !void {
     var b4: u64 = try day04.partB(allocator);
     try stdout.print("Day 4 Part A = {any}\n", .{a4});
     try stdout.print("Day 4 Part B = {any}\n", .{b4});
+
+    var a5: []const u8 = try day05.partA(allocator);
+    var b5: []const u8 = try day05.partB(allocator);
+    try stdout.print("Day 5 Part A = {s}\n", .{a5});
+    try stdout.print("Day 5 Part B = {s}\n", .{b5});
 }
