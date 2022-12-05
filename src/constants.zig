@@ -1,3 +1,3 @@
 const std = @import("std");
 
-pub const TESTING: bool = false;
+pub const TESTING: bool = true;

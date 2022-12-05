@@ -21,9 +21,8 @@ const Point = struct {
 fn charGrid(allocator: std.mem.Allocator, input: []const u8) !std.AutoHashMap(Point, u8) {
     const HM = std.AutoHashMap(Point, u8);
     var result = HM.init(allocator);
-
-    var parts = splitInput(input);
-    var stacks = parts[0];
+    var parts = std.mem.split(u8, input, "\n\n");
+    var stacks = parts.next().?;
 
     var line: i64 = 0;
 
@@ -73,16 +72,10 @@ fn constructState(allocator: std.mem.Allocator, char_grid: *std.AutoHashMap(Poin
     return result;
 }
 
-fn splitInput(input: []const u8) [][]const u8 {
-    var result: [2][]const u8 = undefined;
-    var parts = std.mem.split(u8, input, "\n\n");
-    result[0] = parts.next().?;
-    result[1] = parts.next().?;
-    return &result;
-}
-
 fn operateA(state: *State, input: []const u8) !void {
-    var instructions = splitInput(input)[1];
+    var initial_parts = std.mem.split(u8, input, "\n\n");
+    _ = initial_parts.next();
+    var instructions = initial_parts.next().?;
     var instruction_lines = std.mem.split(u8, instructions, "\n");
     while (instruction_lines.next()) |line| {
         var parts = std.mem.split(u8, line, " from ");
@@ -92,8 +85,8 @@ fn operateA(state: *State, input: []const u8) !void {
         var count_num: u64 = try std.fmt.parseInt(u64, count_part, 10);
         var x_to_y = parts.next().?;
         var x_y_parts = std.mem.split(u8, x_to_y, " to ");
-        var from = try std.fmt.parseInt(u64, x_y_parts.next().?, 10) - 1;
-        var to = try std.fmt.parseInt(u64, x_y_parts.next().?, 10) - 1;
+        var from = try std.fmt.parseInt(usize, x_y_parts.next().?, 10) - 1;
+        var to = try std.fmt.parseInt(usize, x_y_parts.next().?, 10) - 1;
 
         var i: u64 = 0;
         while (i < count_num) : (i += 1) {
@@ -104,7 +97,9 @@ fn operateA(state: *State, input: []const u8) !void {
 }
 
 fn operateB(allocator: std.mem.Allocator, state: *State, input: []const u8) !void {
-    var instructions = splitInput(input)[1];
+    var initial_parts = std.mem.split(u8, input, "\n\n");
+    _ = initial_parts.next();
+    var instructions = initial_parts.next().?;
     var instruction_lines = std.mem.split(u8, instructions, "\n");
     while (instruction_lines.next()) |line| {
         var parts = std.mem.split(u8, line, " from ");
@@ -114,19 +109,19 @@ fn operateB(allocator: std.mem.Allocator, state: *State, input: []const u8) !voi
         var count_num: u64 = try std.fmt.parseInt(u64, count_part, 10);
         var x_to_y = parts.next().?;
         var x_y_parts = std.mem.split(u8, x_to_y, " to ");
-        var from = try std.fmt.parseInt(u64, x_y_parts.next().?, 10) - 1;
-        var to = try std.fmt.parseInt(u64, x_y_parts.next().?, 10) - 1;
+        var from = try std.fmt.parseInt(usize, x_y_parts.next().?, 10) - 1;
+        var to = try std.fmt.parseInt(usize, x_y_parts.next().?, 10) - 1;
         var tmp = std.ArrayList(u8).init(allocator);
         var count_two = count_num;
 
         var i: u64 = 0;
         while (i < count_num) : (i += 1) {
-            var v = state.stacks.items[from].pop();
+            var v: u8 = state.stacks.items[from].pop();
             try tmp.append(v);
         }
         i = 0;
         while (i < count_two) : (i += 1) {
-            var v = tmp.pop();
+            var v: u8 = tmp.pop();
             try state.stacks.items[to].append(v);
         }
     }
