@@ -38,7 +38,7 @@ pub fn main() !void {
     try stdout.print("Day 5 Part B = {s}\n", .{b5});
 
     var a6: u64 = try day06.partA();
-    var b6: u64 = try day06.partB(allocator);
-    try stdout.print("Day 5 Part A = {any}\n", .{a6});
-    try stdout.print("Day 5 Part B = {any}\n", .{b6});
+    var b6: u64 = try day06.partB();
+    try stdout.print("Day 6 Part A = {any}\n", .{a6});
+    try stdout.print("Day 6 Part B = {any}\n", .{b6});
 }
