@@ -10,9 +10,9 @@ fn inputText() []const u8 {
 }
 
 fn allUnique(input: []const u8) bool {
-    var i: u64 = 0;
+    var i: usize = 0;
     while (i < input.len - 1) : (i += 1) {
-        var j: u64 = i + 1;
+        var j: usize = i + 1;
         while (j < input.len) : (j += 1) {
             if (input[i] == input[j]) {
                 return false;
@@ -22,8 +22,8 @@ fn allUnique(input: []const u8) bool {
     return true;
 }
 
-fn findStartOfPacketIndex(input: []const u8, length: u64) ?u64 {
-    var i: u64 = length - 1;
+fn findStartOfPacketIndex(input: []const u8, length: usize) ?u64 {
+    var i: usize = length - 1;
     while (i < input.len) : (i += 1) {
         var l = input[i - (length - 1) .. i + 1];
         if (allUnique(l)) {
