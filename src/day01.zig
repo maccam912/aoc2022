@@ -37,16 +37,13 @@ fn parseElves(allocator: std.mem.Allocator, input: []const u8) !std.ArrayList(El
     return list;
 }
 
-fn maxCalories(l: *std.ArrayList(Elf)) u64 {
+fn maxCalories(l: []Elf) u64 {
     var max_calories_so_far: u64 = 0;
-    var item = l.popOrNull();
-    while (item != null) {
-        if (item.?.calories > max_calories_so_far) {
-            max_calories_so_far = item.?.calories;
+    for (l) |item| {
+        if (item.calories > max_calories_so_far) {
+            max_calories_so_far = item.calories;
         }
-        item = l.popOrNull();
     }
-
     return max_calories_so_far;
 }
 
@@ -90,7 +87,7 @@ fn maxCaloriesTopThree(l: *std.ArrayList(Elf)) u64 {
 pub fn partA(allocator: std.mem.Allocator) !u64 {
     const input_str = comptime inputText();
     var elves = try parseElves(allocator, input_str);
-    var max_cals = maxCalories(&elves);
+    var max_cals = maxCalories(elves.items);
     return max_cals;
 }
 
