@@ -1,6 +1,6 @@
 const std = @import("std");
 
-pub const TESTING: bool = false;
+pub const TESTING: bool = true;
 
 pub fn strEq(a: []const u8, b: []const u8) bool {
     if (a.len != b.len) {
