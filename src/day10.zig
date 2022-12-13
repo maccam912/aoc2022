@@ -18,7 +18,6 @@ const Cpu = struct {
         self.history[0] = 1;
         var instructions = std.mem.split(u8, input, "\n");
         while (instructions.next()) |ins| {
-            std.log.debug("{s}", .{ins});
             var parts = std.mem.split(u8, ins, " ");
             var op = parts.next().?;
             if (constants.strEq(op, "noop")) {
@@ -34,7 +33,6 @@ const Cpu = struct {
                 self.x += value;
                 self.history[self.clock] = self.x;
             }
-            std.log.debug("Clock: {}\tX: {}", .{ self.clock, self.x });
         }
     }
 };
@@ -44,9 +42,6 @@ pub fn partA() !isize {
     var cpu = Cpu{ .x = 1, .clock = 0, .history = undefined };
     try cpu.run(input);
     const h = cpu.history;
-    for ([_]u8{ 20, 60, 100, 140, 180, 220 }) |i| {
-        std.log.debug("{}: {} for {}", .{ i, h[i], @intCast(isize, h[i - 1]) * i });
-    }
     return 20 * h[19] + 60 * h[59] + 100 * h[99] + 140 * h[139] + 180 * h[179] + 220 * h[219];
 }
 

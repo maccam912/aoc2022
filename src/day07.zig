@@ -68,36 +68,6 @@ const Dir = struct {
         }
         try list.append(self.getTotalSize());
     }
-
-    fn debug(self: *Dir, level: usize) void {
-        if (level == 0) {
-            std.log.debug("vvvvvvv", .{});
-        }
-        var it_dir = self.subdirs.iterator();
-        while (it_dir.next()) |dir| {
-            if (level == 0) {
-                std.log.debug("Directory {s}:", .{dir.key_ptr.*});
-            } else if (level == 1) {
-                std.log.debug("\tDirectory {s}:", .{dir.key_ptr.*});
-            } else if (level >= 2) {
-                std.log.debug("\t\tDirectory {s}:", .{dir.key_ptr.*});
-            }
-            dir.value_ptr.debug(level + 1);
-        }
-        var it_file = self.files.iterator();
-        while (it_file.next()) |file| {
-            if (level == 0) {
-                std.log.debug("File {s} of size {}", .{ file.key_ptr.*, file.value_ptr.size });
-            } else if (level == 1) {
-                std.log.debug("\tFile {s} of size {}", .{ file.key_ptr.*, file.value_ptr.size });
-            } else if (level >= 2) {
-                std.log.debug("\t\tFile {s} of size {}", .{ file.key_ptr.*, file.value_ptr.size });
-            }
-        }
-        if (level == 0) {
-            std.log.debug("^^^^^^^", .{});
-        }
-    }
 };
 
 const Shell = struct {
@@ -188,7 +158,6 @@ pub fn partA(allocator: std.mem.Allocator) !u64 {
     const ListSizes = std.ArrayList(usize);
     var list = ListSizes.init(allocator);
     try dir.createSizesList(&list);
-    // std.log.debug("Sizes list: {any}", .{list});
     var sum: usize = 0;
     for (list.items) |item| {
         if (item <= 100000) {
@@ -207,7 +176,6 @@ pub fn partB(allocator: std.mem.Allocator) !u64 {
     const ListSizes = std.ArrayList(usize);
     var list = ListSizes.init(allocator);
     try dir.createSizesList(&list);
-    // std.log.debug("Sizes list: {any}", .{list});
     const current_free_space = 70000000 - dir.getTotalSize();
     const min_needed_extra = 30000000 - current_free_space;
     var candidate_size = dir.getTotalSize();

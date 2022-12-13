@@ -157,7 +157,6 @@ pub fn partB(allocator: std.mem.Allocator) !usize {
     var min_steps: usize = std.math.maxInt(usize);
     var i: usize = 0;
     for (level_a.items) |item| {
-        std.log.debug("Checking item {}", .{i});
         i += 1;
         var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
         defer arena.deinit();

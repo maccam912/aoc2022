@@ -103,10 +103,6 @@ fn prettyPrint(item: PacketItem) void {
 }
 
 fn checkPairOrder(allocator: std.mem.Allocator, l: PacketItem, r: PacketItem) !i8 {
-    // std.debug.print("\n\n", .{});
-    // prettyPrint(l);
-    // std.debug.print("\n", .{});
-    // prettyPrint(r);
     // 1 means "r" is greater, they're in correct order
     // 0 means they are equal
     // -1 means they are backward i.e. "r" is less than "l"
@@ -166,7 +162,6 @@ pub fn partA(allocator: std.mem.Allocator) !usize {
     var idx: usize = 0;
     for (pairs.items) |pair| {
         idx += 1;
-        std.debug.print("{any}\n", .{try checkPairOrder(allocator, pair.l, pair.r)});
         if (try checkPairOrder(allocator, pair.l, pair.r) == 1) {
             sum += idx;
         }
@@ -212,10 +207,8 @@ pub fn partB(allocator: std.mem.Allocator) !usize {
                         .num => |n| {
                             if (n == 2) {
                                 two_idx = idx;
-                                std.debug.print("Found the two!\n", .{});
                             } else if (n == 6) {
                                 six_idx = idx;
-                                std.debug.print("Found the six!\n", .{});
                             }
                         },
                         else => continue,
@@ -224,9 +217,6 @@ pub fn partB(allocator: std.mem.Allocator) !usize {
             },
             else => continue,
         }
-
-        prettyPrint(item);
-        std.debug.print("\n", .{});
     }
 
     return two_idx * six_idx;
