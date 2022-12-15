@@ -111,7 +111,6 @@ fn checkCoverageOnLine(allocator: std.mem.Allocator, sensors: []Sensor, line: us
     while (deduped.next()) |_| {
         count += 1;
     }
-    std.log.debug("Deduped {any}", .{count});
     return count;
 }
 
@@ -125,11 +124,69 @@ pub fn partA(allocator: std.mem.Allocator) !usize {
         line = 2000000;
     }
     var coverage = checkCoverageOnLine(allocator, sensors.items, line);
-    std.log.debug("Beacons: {any}", .{coverage});
-    return 1;
+    return coverage;
+}
+
+fn coordDist(a: *const Coord, b: *const Coord) usize {
+    return std.math.absCast(a.x - b.x) + std.math.absCast(a.y - b.y);
+}
+
+fn coordContainedBySensor(coord: *const Coord, sensor: *const Sensor) bool {
+    return coordDist(&sensor.loc, coord) <= sensor.r;
 }
 
 pub fn partB(allocator: std.mem.Allocator) !usize {
-    _ = allocator;
-    return 1;
+    var border_val: usize = undefined;
+    if (constants.TESTING) {
+        border_val = 20;
+    } else {
+        border_val = 4_000_000;
+    }
+    const input = comptime inputText();
+    var sensors = try parseInput(allocator, input);
+    var borders = std.AutoHashMap(Coord, void).init(allocator);
+    var len = sensors.items.len;
+    var i: usize = 0;
+    for (sensors.items) |sensor| {
+        i += 1;
+        var iradius: isize = @intCast(isize, sensor.r);
+        var x = sensor.loc.x - iradius;
+        if (x >= 0 and x <= border_val) {
+            try borders.put(Coord{ .x = sensor.loc.x - iradius - 1, .y = sensor.loc.y }, {});
+            try borders.put(Coord{ .x = sensor.loc.x - iradius + 1, .y = sensor.loc.y }, {});
+        }
+        while (x < sensor.loc.x + iradius) : (x += 1) {
+            // Add above and below
+            if (x >= 0 and x <= border_val) {
+                const vert_dist = 1 + iradius - (try std.math.absInt(sensor.loc.x - x));
+                var top_y = sensor.loc.y + vert_dist;
+                var bottom_y = sensor.loc.y - vert_dist;
+                if (top_y >= 0 and top_y <= border_val) {
+                    try borders.put(Coord{ .x = x, .y = top_y }, {});
+                }
+                if (bottom_y >= 0 and bottom_y <= border_val) {
+                    try borders.put(Coord{ .x = x, .y = bottom_y }, {});
+                }
+            }
+        }
+    }
+
+    var it = borders.keyIterator();
+    while (it.next()) |item| {
+        if (item.x >= 0 and item.x <= border_val and item.y >= 0 and item.y <= border_val) {
+            var foundit: bool = true;
+            for (sensors.items) |sensor| {
+                if (coordContainedBySensor(item, &sensor)) {
+                    foundit = false;
+                    break;
+                }
+            }
+            if (foundit) {
+                // Holy cow we found it!!!
+                return @intCast(usize, item.x * 4_000_000 + item.y);
+            }
+        }
+    }
+
+    return error.NotFoundError;
 }
