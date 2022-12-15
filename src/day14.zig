@@ -27,7 +27,7 @@ fn strToCoord(input: []const u8) !Coord {
 }
 
 fn parseInput(allocator: std.mem.Allocator, input: []const u8) !std.AutoHashMap(Coord, Tile) {
-    var lines = std.mem.split(u8, input, "\n");
+    var lines = std.mem.tokenize(u8, input, "\r\n");
     var grid = std.AutoHashMap(Coord, Tile).init(allocator);
 
     var min_row: usize = 0; //std.math.maxInt(usize);
