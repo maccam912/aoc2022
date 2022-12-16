@@ -145,7 +145,6 @@ pub fn partB(allocator: std.mem.Allocator) !usize {
     const input = comptime inputText();
     var sensors = try parseInput(allocator, input);
     var borders = std.AutoHashMap(Coord, void).init(allocator);
-    var len = sensors.items.len;
     var i: usize = 0;
     for (sensors.items) |sensor| {
         i += 1;
