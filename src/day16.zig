@@ -36,8 +36,8 @@ const Node = struct {
         self.edges.deinit();
     }
 
-    fn clone(self: *Node) !Node {
-        var edges = std.ArrayList([]const u8).init(self.allocator);
+    fn clone(self: *Node, new_allocator: std.mem.Allocator) !Node {
+        var edges = std.ArrayList([]const u8).init(new_allocator);
 
         for (self.edges.items) |item| {
             try edges.append(item);
@@ -47,7 +47,7 @@ const Node = struct {
             .name = self.name,
             .flow_rate = self.flow_rate,
             .open = self.open,
-            .allocator = self.allocator,
+            .allocator = new_allocator,
             .visited_distance = self.visited_distance,
             .edges = edges,
         };
@@ -85,8 +85,12 @@ const State = struct {
         self.nodes.deinit();
     }
 
-    fn step(self: *State) void {
-        if (self.time_step <= 30) {
+    fn step(self: *State, comptime part_b: bool) void {
+        comptime var steps = 30;
+        if (part_b) {
+            steps = 26;
+        }
+        if (self.time_step <= steps) {
             self.pressure_released += self.pressure_released_per_step;
         }
         if (self.active) {
@@ -143,12 +147,12 @@ const State = struct {
         return result;
     }
 
-    fn clone(self: *State) !State {
-        var cloned_nodes = std.StringHashMap(Node).init(self.nodes.allocator);
+    fn clone(self: *State, new_allocator: std.mem.Allocator) !State {
+        var cloned_nodes = std.StringHashMap(Node).init(new_allocator);
 
         var it = self.nodes.keyIterator();
         while (it.next()) |item| {
-            try cloned_nodes.put(item.*, try self.nodes.getPtr(item.*).?.*.clone());
+            try cloned_nodes.put(item.*, try self.nodes.getPtr(item.*).?.*.clone(new_allocator));
         }
 
         return State{
@@ -232,18 +236,23 @@ const SolveResponse = struct {
     pressure_per_step: usize,
 };
 
-fn solve(allocator: std.mem.Allocator, state: *State, top_level: bool) !SolveResponse {
+fn solve(allocator: std.mem.Allocator, state: *State, top_level: bool, comptime part_b: bool) !SolveResponse {
+    comptime var steps = 30;
+    if (part_b) {
+        steps = 26;
+    }
+
     while (state.active) {
-        state.step();
-        if (state.time_step == 30) {
+        state.step(part_b);
+        if (state.time_step == steps) {
             return SolveResponse{ .score = state.pressure_released, .pressure_per_step = state.pressure_released_per_step };
         }
     }
 
     var unopened_nodes = (try state.nodesStillClosed()).items;
     if (unopened_nodes.len == 0) {
-        while (state.time_step != 30) {
-            state.step();
+        while (state.time_step != steps) {
+            state.step(part_b);
         }
         return SolveResponse{ .score = state.pressure_released, .pressure_per_step = state.pressure_released_per_step };
     }
@@ -252,18 +261,18 @@ fn solve(allocator: std.mem.Allocator, state: *State, top_level: bool) !SolveRes
     var max_pressure_per_step: usize = 0;
     for (unopened_nodes) |target| {
         // std.time.sleep(std.time.ns_per_s);
-        var new_state = try state.clone();
+        var new_state = try state.clone(allocator);
         try new_state.setTarget(target);
-        var score = try solve(allocator, &new_state, false);
+        var score = try solve(allocator, &new_state, false, part_b);
         if (top_level) {
-            std.log.err("({}/{}) score: {} (max score: {})", .{ count, unopened_nodes.len, score.score, max_score });
+            // std.log.err("({}/{}) score: {} (max score: {})", .{ count, unopened_nodes.len, score.score, max_score });
         }
         if (score.score > max_score) {
             max_pressure_per_step = score.pressure_per_step;
             max_score = score.score;
         }
         if (top_level) {
-            std.log.debug("Max node: {s}", .{target});
+            // std.log.debug("Max node: {s}", .{target});
         }
         count += 1;
     }
@@ -274,12 +283,56 @@ pub fn partA(allocator: std.mem.Allocator) !usize {
     const input = comptime inputText();
     var graph = try parseInput(allocator, input);
     std.log.debug("graph: {any}", .{graph});
-    var result = try solve(allocator, &graph, true);
+    var result = try solve(allocator, &graph, true, false);
     std.log.debug("Pressure per step: {}", .{result.pressure_per_step});
     return result.score;
 }
 
 pub fn partB(allocator: std.mem.Allocator) !usize {
-    _ = allocator;
-    return 1;
+    const input = comptime inputText();
+    var graph = try parseInput(allocator, input);
+    var unopened_nodes = (try graph.nodesStillClosed()).items;
+    var curr_max: usize = 0;
+    var count: usize = 0;
+    var buffer: []u8 = try allocator.alloc(u8, std.math.pow(usize, 2, 30));
+    var fba = std.heap.FixedBufferAllocator.init(buffer);
+    while (count < 32768) : (count += 1) {
+        if (@mod(count, 100) == 0) {
+            std.log.err("Count: {}", .{count});
+        }
+        // var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+        // defer arena.deinit();
+        // const new_allocator = arena.allocator();
+        var count_clone_a = count;
+        var idx_a: usize = 0;
+        var high_bits: usize = 0;
+        while (idx_a < unopened_nodes.len) : (idx_a += 1) {
+            high_bits += @mod(count_clone_a, 2);
+            count_clone_a = count_clone_a >> 1;
+        }
+        if (high_bits == 7) {
+            fba.reset();
+            const new_allocator = fba.allocator();
+            var graph_a = try graph.clone(new_allocator);
+            var graph_b = try graph.clone(new_allocator);
+            var idx: usize = 0;
+            var count_clone = count;
+            while (idx < unopened_nodes.len) : (idx += 1) {
+                var node_name = unopened_nodes[idx];
+                if (idx < unopened_nodes.len and @mod(count_clone, 2) == 0) {
+                    graph_b.nodes.getPtr(node_name).?.*.flow_rate = 0;
+                } else {
+                    graph_a.nodes.getPtr(node_name).?.*.flow_rate = 0;
+                }
+                count_clone = count_clone >> 1;
+            }
+            var best_graph_a_score = try solve(new_allocator, &graph_a, true, true);
+            var best_graph_b_score = try solve(new_allocator, &graph_b, true, true);
+            std.log.debug("graph_a score was {} and graph_b score was {}", .{ best_graph_a_score.score, best_graph_b_score.score });
+            if (best_graph_a_score.score + best_graph_b_score.score > curr_max) {
+                curr_max = best_graph_a_score.score + best_graph_b_score.score;
+            }
+        }
+    }
+    return curr_max;
 }

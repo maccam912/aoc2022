@@ -22,10 +22,10 @@ pub fn main() !void {
     const allocator = arena.allocator();
     const stdout = std.io.getStdOut().writer();
 
-    // var a1: u64 = try day01.partA(allocator);
-    // var b1: u64 = try day01.partB(allocator);
-    // try stdout.print("Day 1 Part A = {any}\n", .{a1});
-    // try stdout.print("Day 1 Part B = {any}\n", .{b1});
+    var a1: u64 = try day01.partA(allocator);
+    var b1: u64 = try day01.partB(allocator);
+    try stdout.print("Day 1 Part A = {any}\n", .{a1});
+    try stdout.print("Day 1 Part B = {any}\n", .{b1});
 
     // var a2: u64 = try day02.partA(allocator);
     // var b2: u64 = try day02.partB(allocator);
@@ -91,8 +91,8 @@ pub fn main() !void {
     // try stdout.print("Day 15 Part A = {any}\n", .{a15});
     // try stdout.print("Day 15 Part B = {any}\n", .{b15});
 
-    var a16: u64 = try day16.partA(allocator);
+    // var a16: u64 = try day16.partA(allocator);
     var b16: u64 = try day16.partB(allocator);
-    try stdout.print("Day 16 Part A = {any}\n", .{a16});
+    // try stdout.print("Day 16 Part A = {any}\n", .{a16});
     try stdout.print("Day 16 Part B = {any}\n", .{b16});
 }
