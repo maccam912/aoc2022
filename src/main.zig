@@ -15,6 +15,7 @@ const day13 = @import("day13.zig");
 const day14 = @import("day14.zig");
 const day15 = @import("day15.zig");
 const day16 = @import("day16.zig");
+const day17 = @import("day17.zig");
 
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
@@ -22,10 +23,10 @@ pub fn main() !void {
     const allocator = arena.allocator();
     const stdout = std.io.getStdOut().writer();
 
-    var a1: u64 = try day01.partA(allocator);
-    var b1: u64 = try day01.partB(allocator);
-    try stdout.print("Day 1 Part A = {any}\n", .{a1});
-    try stdout.print("Day 1 Part B = {any}\n", .{b1});
+    // var a1: u64 = try day01.partA(allocator);
+    // var b1: u64 = try day01.partB(allocator);
+    // try stdout.print("Day 1 Part A = {any}\n", .{a1});
+    // try stdout.print("Day 1 Part B = {any}\n", .{b1});
 
     // var a2: u64 = try day02.partA(allocator);
     // var b2: u64 = try day02.partB(allocator);
@@ -92,7 +93,12 @@ pub fn main() !void {
     // try stdout.print("Day 15 Part B = {any}\n", .{b15});
 
     // var a16: u64 = try day16.partA(allocator);
-    var b16: u64 = try day16.partB(allocator);
+    // var b16: u64 = try day16.partB(allocator);
     // try stdout.print("Day 16 Part A = {any}\n", .{a16});
-    try stdout.print("Day 16 Part B = {any}\n", .{b16});
+    // try stdout.print("Day 16 Part B = {any}\n", .{b16});
+
+    var a17: u64 = try day17.partA(allocator);
+    var b17: u64 = try day17.partB(allocator); // Warning: part b took some manual work. It presents offset before cycle starts, then number of pieces before cycle
+    try stdout.print("Day 17 Part A = {any}\n", .{a17});
+    try stdout.print("Day 17 Part B = {any}\n", .{b17});
 }
