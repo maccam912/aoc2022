@@ -1,6 +1,8 @@
 const std = @import("std");
 const constants = @import("constants.zig");
 
+const debug = false;
+
 fn inputText() []const u8 {
     if (constants.TESTING) {
         return @embedFile("test_inputs/day19.txt");
@@ -88,6 +90,10 @@ const Blueprint = struct {
     }
 };
 
+fn divCeil(num: usize, den: usize) usize {
+    return @divFloor(num, den) + 1;
+}
+
 const Action = enum {
     nothing,
     build_ore_robot,
@@ -138,8 +144,8 @@ const State = struct {
         };
     }
 
-    fn run(self: *State, global_best_score: *usize, action: Action) !usize {
-        if (self.step_num == 24) {
+    fn run(self: *State, global_best_score: *usize, action: Action, max_step: usize) !usize {
+        if (self.step_num == max_step) {
             // We've run all our steps, return num geodes
             return self.total_geode;
         }
@@ -193,13 +199,27 @@ const State = struct {
 
         self.step_num += 1;
 
-        // max possible score is if you mined self.num_geode_robots each timestep for the rest of the 24, plus made one new bot each timestep
-        const remaining_steps = 24 - self.step_num;
-        const current_geode_rate = self.num_geode_robots * remaining_steps;
-        const possible_total_no_new_bots = current_geode_rate + self.total_geode;
-        // the ol 1+2+3..n => (n+1)*(n/2)
-        const max_possible_extras = @floatToInt(usize, @intToFloat(f32, remaining_steps + 1) * (@intToFloat(f32, remaining_steps) / 2.0));
-        const best_possible_score = possible_total_no_new_bots + max_possible_extras;
+        // max possible score is if you mined self.num_geode_robots each timestep for the rest of the max_step, plus made one new bot each timestep
+        const remaining_steps = max_step - self.step_num;
+        const extrapolated = self.total_geode + self.num_geode_robots * remaining_steps;
+        _ = extrapolated;
+
+        var i: usize = 1;
+        var best_possible_score: usize = self.total_geode;
+        var clay_sum: usize = self.total_clay;
+        var obsidian_sum: usize = self.total_obsidian;
+        while (i <= remaining_steps) : (i += 1) {
+            clay_sum += i;
+            var max_possible_obsidian_bots = self.num_obsidian_robots + @divFloor(clay_sum, self.blueprint.obsidian_robot_cost_clay);
+            obsidian_sum += max_possible_obsidian_bots;
+            var max_possible_geode_bots = self.num_geode_robots + @divFloor(obsidian_sum, self.blueprint.geode_robot_cost_obsidian);
+            best_possible_score += max_possible_geode_bots;
+        }
+
+        // var best_possible_score_2 = @floatToInt(usize, @intToFloat(f32, remaining_steps+1)*(@intToFloat(f32, remaining_steps)/2.0));
+        // best_possible_score = @min(best_possible_score, best_possible_score_2);
+
+        // Now just throw it all out and calculate best possible score estimate. Maybe wrong but fast
         if (best_possible_score <= global_best_score.*) {
             // Already found something better
             return 0;
@@ -209,37 +229,25 @@ const State = struct {
 
         global_best_score.* = @max(global_best_score.*, best_score);
 
-        if (best_possible_score > best_score and self.total_ore >= self.blueprint.ore_robot_cost) {
-            // Can afford new ore robot
-            var new_clone = self.clone();
-            const new_ore_robot_score = try new_clone.run(global_best_score, Action.build_ore_robot);
-            best_score = @max(best_score, new_ore_robot_score);
-        }
-
-        global_best_score.* = @max(global_best_score.*, best_score);
-
-        if (best_possible_score == best_score) {
-            return best_score;
-        }
-
-        if (best_possible_score > best_score and self.total_ore >= self.blueprint.clay_robot_cost) {
-            // Can afford new clay robot
-            var new_clone = self.clone();
-            const new_clay_robot_score = try new_clone.run(global_best_score, Action.build_clay_robot);
-            best_score = @max(best_score, new_clay_robot_score);
-        }
-
-        global_best_score.* = @max(global_best_score.*, best_score);
-
-        if (best_possible_score == best_score) {
-            return best_score;
-        }
-
-        if (best_possible_score > best_score and self.total_ore >= self.blueprint.obsidian_robot_cost_ore and self.total_clay >= self.blueprint.obsidian_robot_cost_clay) {
-            // Can afford new obsidian robot
-            var new_clone = self.clone();
-            const new_obsidian_robot_score = try new_clone.run(global_best_score, Action.build_obsidian_robot);
-            best_score = @max(best_score, new_obsidian_robot_score);
+        if (debug) {
+            std.log.debug("==============", .{});
+            std.log.debug("State: {any}", .{self});
+            std.log.debug("global best so far: {}", .{global_best_score.*});
+            std.log.debug("best possible {}", .{best_possible_score});
+            var buf: [10]u8 = undefined;
+            const stdin = std.io.getStdIn().reader();
+            _ = try stdin.readUntilDelimiterOrEof(buf[0..], '\n');
+            if (buf[0] == 'o') {
+                return self.run(global_best_score, Action.build_ore_robot);
+            } else if (buf[0] == 'c') {
+                return self.run(global_best_score, Action.build_clay_robot);
+            } else if (buf[0] == 'b') {
+                return self.run(global_best_score, Action.build_obsidian_robot);
+            } else if (buf[0] == 'g') {
+                return self.run(global_best_score, Action.build_geode_robot);
+            } else if (buf[0] == 'n') {
+                return self.run(global_best_score, Action.nothing);
+            }
         }
 
         global_best_score.* = @max(global_best_score.*, best_score);
@@ -251,8 +259,47 @@ const State = struct {
         if (best_possible_score > best_score and self.total_ore >= self.blueprint.geode_robot_cost_ore and self.total_obsidian >= self.blueprint.geode_robot_cost_obsidian) {
             // Can afford new geode robot
             var new_clone = self.clone();
-            const new_geode_robot_score = try new_clone.run(global_best_score, Action.build_geode_robot);
+            const new_geode_robot_score = try new_clone.run(global_best_score, Action.build_geode_robot, max_step);
             best_score = @max(best_score, new_geode_robot_score);
+        }
+
+        global_best_score.* = @max(global_best_score.*, best_score);
+
+        if (best_possible_score == best_score) {
+            return best_score;
+        }
+
+        if (best_possible_score > best_score and self.total_ore >= self.blueprint.obsidian_robot_cost_ore and self.total_clay >= self.blueprint.obsidian_robot_cost_clay) {
+            // Can afford new obsidian robot
+            var new_clone = self.clone();
+            const new_obsidian_robot_score = try new_clone.run(global_best_score, Action.build_obsidian_robot, max_step);
+            best_score = @max(best_score, new_obsidian_robot_score);
+        }
+
+        global_best_score.* = @max(global_best_score.*, best_score);
+
+        if (best_possible_score == best_score) {
+            return best_score;
+        }
+
+        if (best_possible_score > best_score and self.total_ore >= self.blueprint.clay_robot_cost) {
+            // Can afford new clay robot
+            var new_clone = self.clone();
+            const new_clay_robot_score = try new_clone.run(global_best_score, Action.build_clay_robot, max_step);
+            best_score = @max(best_score, new_clay_robot_score);
+        }
+
+        global_best_score.* = @max(global_best_score.*, best_score);
+
+        if (best_possible_score == best_score) {
+            return best_score;
+        }
+
+        if (best_possible_score > best_score and self.total_ore >= self.blueprint.ore_robot_cost) {
+            // Can afford new ore robot
+            var new_clone = self.clone();
+            const new_ore_robot_score = try new_clone.run(global_best_score, Action.build_ore_robot, max_step);
+            best_score = @max(best_score, new_ore_robot_score);
         }
 
         global_best_score.* = @max(global_best_score.*, best_score);
@@ -269,7 +316,7 @@ const State = struct {
 
         global_best_score.* = @max(global_best_score.*, best_score);
 
-        return @max(best_score, try self.run(global_best_score, Action.nothing));
+        return @max(best_score, try self.run(global_best_score, Action.nothing, max_step));
     }
 };
 
@@ -280,12 +327,37 @@ pub fn partA(allocator: std.mem.Allocator) !usize {
     while (blueprints.next()) |line| {
         try states.append(try State.new(line));
     }
-    var global_best_score: usize = 0;
-    std.log.debug("State 1 score: {any}", .{states.items[1].run(&global_best_score, Action.nothing)});
-    return global_best_score;
+
+    var num: usize = 0;
+    var total_quality: usize = 0;
+    while (num < states.items.len) : (num += 1) {
+        var global_best_score: usize = 0;
+        const bpnum = num + 1;
+        const score = try states.items[num].run(&global_best_score, Action.nothing, 24);
+        const quality_level = score * bpnum;
+        std.log.err("Done running state {}, score {}", .{ num, score });
+        total_quality += quality_level;
+    }
+
+    return total_quality;
 }
 
 pub fn partB(allocator: std.mem.Allocator) !usize {
-    _ = allocator;
-    return 1;
+    const input = comptime inputText();
+    var blueprints = std.mem.tokenize(u8, input, "\r\n");
+    var states = std.ArrayList(State).init(allocator);
+    while (blueprints.next()) |line| {
+        try states.append(try State.new(line));
+    }
+
+    var num: usize = 0;
+    var quality_prod: usize = 1;
+    while (num < states.items.len and num < 3) : (num += 1) {
+        var global_best_score: usize = 0;
+        const score = try states.items[num].run(&global_best_score, Action.nothing, 32);
+        std.log.err("Done running state {}, score {}", .{ num, score });
+        quality_prod *= score;
+    }
+
+    return quality_prod;
 }
