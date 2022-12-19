@@ -17,6 +17,7 @@ const day15 = @import("day15.zig");
 const day16 = @import("day16.zig");
 const day17 = @import("day17.zig");
 const day18 = @import("day18.zig");
+const day19 = @import("day19.zig");
 
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
@@ -103,8 +104,13 @@ pub fn main() !void {
     // try stdout.print("Day 17 Part A = {any}\n", .{a17});
     // try stdout.print("Day 17 Part B = {any}\n", .{b17});
 
-    var a18: u64 = try day18.partA(allocator);
-    var b18: u64 = try day18.partB(allocator);
-    try stdout.print("Day 18 Part A = {any}\n", .{a18});
-    try stdout.print("Day 18 Part B = {any}\n", .{b18});
+    // var a18: u64 = try day18.partA(allocator);
+    // var b18: u64 = try day18.partB(allocator);
+    // try stdout.print("Day 18 Part A = {any}\n", .{a18});
+    // try stdout.print("Day 18 Part B = {any}\n", .{b18});
+
+    var a19: u64 = try day19.partA(allocator);
+    var b19: u64 = try day19.partB(allocator);
+    try stdout.print("Day 19 Part A = {any}\n", .{a19});
+    try stdout.print("Day 19 Part B = {any}\n", .{b19});
 }
