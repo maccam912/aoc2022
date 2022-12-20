@@ -1,4 +1,5 @@
 const std = @import("std");
+const fs = std.fs;
 
 const TESTING: bool = true;
 
@@ -17,6 +18,47 @@ pub fn build(b: *std.build.Builder) void {
     exe.setTarget(target);
     exe.setBuildMode(mode);
     exe.install();
+
+    const tracy = b.option([]const u8, "tracy", "Enable Tracy integration. Supply path to Tracy source");
+    const tracy_callstack = b.option(bool, "tracy-callstack", "Include callstack information with Tracy data. Does nothing if -Dtracy is not provided") orelse (tracy != null);
+    const tracy_allocation = b.option(bool, "tracy-allocation", "Include allocation information with Tracy data. Does nothing if -Dtracy is not provided") orelse (tracy != null);
+
+    const exe_options = b.addOptions();
+
+    exe_options.addOption(bool, "enable_tracy", tracy != null);
+    exe_options.addOption(bool, "enable_tracy_callstack", tracy_callstack);
+    exe_options.addOption(bool, "enable_tracy_allocation", tracy_allocation);
+    const static_llvm = b.option(bool, "static-llvm", "Disable integration with system-installed LLVM, Clang, LLD, and libc++") orelse false;
+    const enable_llvm = b.option(bool, "enable-llvm", "Build self-hosted compiler with LLVM backend enabled") orelse static_llvm;
+    // exe_options.addOption(bool, "value_tracing", value_tracing);
+    if (tracy) |tracy_path| {
+        const client_cpp = fs.path.join(
+            b.allocator,
+            &[_][]const u8{ tracy_path, "public", "TracyClient.cpp" },
+        ) catch unreachable;
+
+        // On mingw, we need to opt into windows 7+ to get some features required by tracy.
+        const tracy_c_flags: []const []const u8 = if (target.isWindows() and target.getAbi() == .gnu)
+            &[_][]const u8{ "-DTRACY_ENABLE=1", "-fno-sanitize=undefined", "-D_WIN32_WINNT=0x601" }
+        else
+            &[_][]const u8{ "-DTRACY_ENABLE=1", "-fno-sanitize=undefined" };
+
+        exe.addIncludePath(tracy_path);
+        exe.addCSourceFile(client_cpp, tracy_c_flags);
+        if (!enable_llvm) {
+            exe.linkSystemLibraryName("c++");
+        }
+        exe.linkLibC();
+
+        if (target.isWindows()) {
+            exe.linkSystemLibrary("dbghelp");
+            exe.linkSystemLibrary("ws2_32");
+        }
+    }
+
+    exe_options.addOption(bool, "enable_tracy", false);
+    exe_options.addOption(bool, "enable_tracy_callstack", false);
+    exe_options.addOption(bool, "enable_tracy_allocation", false);
 
     const run_cmd = exe.run();
     run_cmd.step.dependOn(b.getInstallStep());
