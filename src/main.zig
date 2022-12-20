@@ -18,8 +18,11 @@ const day16 = @import("day16.zig");
 const day17 = @import("day17.zig");
 const day18 = @import("day18.zig");
 const day19 = @import("day19.zig");
+const trace = @import("tracy.zig").trace;
 
 pub fn main() !void {
+    const tracy = trace(@src());
+    defer tracy.end();
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = arena.allocator();

@@ -1,5 +1,6 @@
 const std = @import("std");
 const constants = @import("constants.zig");
+const trace = @import("tracy.zig").trace;
 
 const debug = false;
 
@@ -145,6 +146,8 @@ const State = struct {
     }
 
     fn run(self: *State, global_best_score: *usize, action: Action, max_step: usize) !usize {
+        const tracy = trace(@src());
+        defer tracy.end();
         if (self.step_num == max_step) {
             // We've run all our steps, return num geodes
             return self.total_geode;
@@ -343,6 +346,8 @@ pub fn partA(allocator: std.mem.Allocator) !usize {
 }
 
 pub fn partB(allocator: std.mem.Allocator) !usize {
+    const tracy = trace(@src());
+    defer tracy.end();
     const input = comptime inputText();
     var blueprints = std.mem.tokenize(u8, input, "\r\n");
     var states = std.ArrayList(State).init(allocator);
@@ -352,7 +357,7 @@ pub fn partB(allocator: std.mem.Allocator) !usize {
 
     var num: usize = 0;
     var quality_prod: usize = 1;
-    while (num < states.items.len and num < 3) : (num += 1) {
+    while (num < states.items.len and num < 2) : (num += 1) {
         var global_best_score: usize = 0;
         const score = try states.items[num].run(&global_best_score, Action.nothing, 32);
         std.log.err("Done running state {}, score {}", .{ num, score });
