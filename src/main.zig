@@ -109,8 +109,8 @@ pub fn main() !void {
     // try stdout.print("Day 18 Part A = {any}\n", .{a18});
     // try stdout.print("Day 18 Part B = {any}\n", .{b18});
 
-    var a19: u64 = try day19.partA(allocator);
+    // var a19: u64 = try day19.partA(allocator);
     var b19: u64 = try day19.partB(allocator);
-    try stdout.print("Day 19 Part A = {any}\n", .{a19});
+    // try stdout.print("Day 19 Part A = {any}\n", .{a19});
     try stdout.print("Day 19 Part B = {any}\n", .{b19});
 }
