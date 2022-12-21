@@ -19,7 +19,8 @@ const day17 = @import("day17.zig");
 const day18 = @import("day18.zig");
 const day19 = @import("day19.zig");
 const day20 = @import("day20.zig");
-const trace = @import("tracy.zig").trace;
+const day21 = @import("day21.zig");
+// const trace = @import("tracy.zig").trace;
 
 pub fn main() !void {
     // const tracy = trace(@src());
@@ -118,8 +119,13 @@ pub fn main() !void {
     // try stdout.print("Day 19 Part A = {any}\n", .{a19});
     // try stdout.print("Day 19 Part B = {any}\n", .{b19});
 
-    var a20: isize = try day20.partA(allocator);
-    var b20: isize = try day20.partB(allocator);
-    try stdout.print("Day 20 Part A = {any}\n", .{a20});
-    try stdout.print("Day 20 Part B = {any}\n", .{b20});
+    // var a20: isize = try day20.partA(allocator);
+    // var b20: isize = try day20.partB(allocator);
+    // try stdout.print("Day 20 Part A = {any}\n", .{a20});
+    // try stdout.print("Day 20 Part B = {any}\n", .{b20});
+
+    var a21: isize = try day21.partA(allocator);
+    var b21: isize = try day21.partB(allocator);
+    try stdout.print("Day 21 Part A = {any}\n", .{a21});
+    try stdout.print("Day 21 Part B = {any}\n", .{b21});
 }
