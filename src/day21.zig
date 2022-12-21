@@ -12,8 +12,8 @@ fn inputText() []const u8 {
 const Op = enum { add, sub, mul, div };
 
 const Node = struct {
-    original_value: ?isize,
-    value: ?isize,
+    original_value: ?i64,
+    value: ?i64,
     l: ?[]const u8,
     r: ?[]const u8,
     op: ?Op,
@@ -56,7 +56,7 @@ fn reset(tree: *std.StringHashMap(Node)) void {
     }
 }
 
-fn resolve(name: []const u8, tree: *std.StringHashMap(Node)) !isize {
+fn resolve(name: []const u8, tree: *std.StringHashMap(Node)) !i64 {
     var node: *Node = tree.getPtr(name).?;
     const value = node.*.value;
     if (value != null) {
@@ -69,10 +69,10 @@ fn resolve(name: []const u8, tree: *std.StringHashMap(Node)) !isize {
             Op.sub => node.*.value = l - r,
             Op.mul => node.*.value = l * r,
             Op.div => {
-                if (std.math.divExact(isize, l, r)) |val| {
+                if (std.math.divExact(i64, l, r)) |val| {
                     node.*.value = val;
                 } else |_| {
-                    return try std.math.divFloor(isize, l, r);
+                    return try std.math.divFloor(i64, l, r);
                 }
             },
         }
@@ -80,7 +80,7 @@ fn resolve(name: []const u8, tree: *std.StringHashMap(Node)) !isize {
     }
 }
 
-pub fn partA(allocator: std.mem.Allocator) !isize {
+pub fn partA(allocator: std.mem.Allocator) !i64 {
     const input = comptime inputText();
     var parsed = try parseInput(allocator, input);
     var resolved = try resolve("root", &parsed);
@@ -88,14 +88,16 @@ pub fn partA(allocator: std.mem.Allocator) !isize {
     return resolved;
 }
 
-pub fn partB(allocator: std.mem.Allocator) !isize {
+pub fn partB(allocator: std.mem.Allocator) !i64 {
     const input = comptime inputText();
     var parsed = try parseInput(allocator, input);
     var l = parsed.get("root").?.l.?;
     var r = parsed.get("root").?.r.?;
-    var inc_amount: isize = 1;
-    var prev_diff: isize = std.math.maxInt(isize);
+    var inc_amount: i64 = 1;
+    var prev_diff: i64 = std.math.maxInt(i64);
+    var count: usize = 0;
     while (try resolve(l, &parsed) != try resolve(r, &parsed)) {
+        count += 1;
         if (resolve(l, &parsed)) |l_val| {
             if (resolve(r, &parsed)) |r_val| {
                 var diff = l_val - r_val;
@@ -114,5 +116,6 @@ pub fn partB(allocator: std.mem.Allocator) !isize {
         parsed.getPtr("humn").?.*.value.? += inc_amount;
     }
     std.log.debug("Humn value: {} l: {} r: {}", .{ parsed.get("humn").?.value.?, try resolve(l, &parsed), try resolve(r, &parsed) });
+    std.log.debug("Count: {}", .{count});
     return parsed.get("humn").?.value.?;
 }

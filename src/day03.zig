@@ -10,8 +10,8 @@ fn inputText() []const u8 {
 }
 
 const Rucksack = struct {
-    left: u64,
-    right: u64,
+    left: usize,
+    right: usize,
 };
 
 fn charToPriority(c: u8) u8 {
@@ -23,13 +23,13 @@ fn charToPriority(c: u8) u8 {
     }
 }
 
-fn strToBits(left: []const u8) u64 {
-    var agg: u64 = 0;
+fn strToBits(left: []const u8) usize {
+    var agg: usize = 0;
 
     for (left) |c| {
         var priority: u8 = charToPriority(c);
         if (priority > 0) {
-            var shifted: u64 = std.math.pow(u64, 2, priority - 1);
+            var shifted: usize = std.math.pow(usize, 2, priority - 1);
             agg |= shifted;
         }
     }
@@ -46,9 +46,9 @@ fn parseRucksack(line: []const u8) Rucksack {
     return Rucksack{ .left = left_bits, .right = right_bits };
 }
 
-fn findCommonPriority(r: *const Rucksack) u64 {
+fn findCommonPriority(r: *const Rucksack) usize {
     var common = r.left & r.right;
-    var common_priority: u64 = std.math.log(u64, 2, common) + 1;
+    var common_priority: usize = std.math.log(usize, 2, common) + 1;
     return common_priority;
 }
 
@@ -64,10 +64,10 @@ fn parseRucksacksA(allocator: std.mem.Allocator, input: []const u8) !std.ArrayLi
     return rucksacks;
 }
 
-pub fn partA(allocator: std.mem.Allocator) !u64 {
+pub fn partA(allocator: std.mem.Allocator) !usize {
     const input = comptime inputText();
     var parsed = try parseRucksacksA(allocator, input);
-    var sum: u64 = 0;
+    var sum: usize = 0;
     for (parsed.toOwnedSlice()) |rucksack| {
         var common_priority = findCommonPriority(&rucksack);
         sum += common_priority;
@@ -75,10 +75,10 @@ pub fn partA(allocator: std.mem.Allocator) !u64 {
     return sum;
 }
 
-pub fn partB() !u64 {
+pub fn partB() !usize {
     const input = comptime inputText();
     var lines = std.mem.tokenize(u8, input, "\n");
-    var sum: u64 = 0;
+    var sum: usize = 0;
     while (lines.next()) |a| {
         var b = lines.next().?;
         var c = lines.next().?;
@@ -89,7 +89,7 @@ pub fn partB() !u64 {
         var c_rucksack = parseRucksack(c);
         var c_value = c_rucksack.left | c_rucksack.right;
         var common_element = a_value & b_value & c_value;
-        var common_priority: u64 = std.math.log(u64, 2, common_element) + 1;
+        var common_priority: usize = std.math.log(usize, 2, common_element) + 1;
         sum += common_priority;
     }
     return sum;

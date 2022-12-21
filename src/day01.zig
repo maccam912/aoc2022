@@ -9,12 +9,12 @@ fn inputText() []const u8 {
     }
 }
 
-const Elf = struct { calories: u64 };
+const Elf = struct { calories: usize };
 
 fn parseElves(allocator: std.mem.Allocator, input: []const u8) !std.ArrayList(Elf) {
     const L = std.ArrayList(Elf);
     var list = L.init(allocator);
-    var calories_sum: u64 = 0;
+    var calories_sum: usize = 0;
 
     var lines = std.mem.split(u8, input, "\n");
     var line: ?[]const u8 = lines.first();
@@ -25,7 +25,7 @@ fn parseElves(allocator: std.mem.Allocator, input: []const u8) !std.ArrayList(El
             calories_sum = 0;
         } else {
             // We have a number!
-            var num: u64 = try std.fmt.parseInt(u64, line.?, 10);
+            var num: usize = try std.fmt.parseInt(usize, line.?, 10);
             calories_sum += num;
         }
         line = lines.next();
@@ -37,8 +37,8 @@ fn parseElves(allocator: std.mem.Allocator, input: []const u8) !std.ArrayList(El
     return list;
 }
 
-fn maxCalories(l: []Elf) u64 {
-    var max_calories_so_far: u64 = 0;
+fn maxCalories(l: []Elf) usize {
+    var max_calories_so_far: usize = 0;
     for (l) |item| {
         if (item.calories > max_calories_so_far) {
             max_calories_so_far = item.calories;
@@ -61,12 +61,12 @@ fn sortVals(max: *Triple) void {
 }
 
 const Triple = struct {
-    a: u64,
-    b: u64,
-    c: u64,
+    a: usize,
+    b: usize,
+    c: usize,
 };
 
-fn maxCaloriesTopThree(l: *std.ArrayList(Elf)) u64 {
+fn maxCaloriesTopThree(l: *std.ArrayList(Elf)) usize {
     var max: Triple = Triple{ .a = 0, .b = 0, .c = 0 };
     var item = l.popOrNull();
     while (item != null) {
@@ -84,14 +84,14 @@ fn maxCaloriesTopThree(l: *std.ArrayList(Elf)) u64 {
     return max.a + max.b + max.c;
 }
 
-pub fn partA(allocator: std.mem.Allocator) !u64 {
+pub fn partA(allocator: std.mem.Allocator) !usize {
     const input_str = comptime inputText();
     var elves = try parseElves(allocator, input_str);
     var max_cals = maxCalories(elves.items);
     return max_cals;
 }
 
-pub fn partB(allocator: std.mem.Allocator) !u64 {
+pub fn partB(allocator: std.mem.Allocator) !usize {
     const input_str = comptime inputText();
     var elves = try parseElves(allocator, input_str);
     var max_cals = maxCaloriesTopThree(&elves);

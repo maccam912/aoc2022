@@ -10,8 +10,8 @@ fn inputText() []const u8 {
 }
 
 const Elf = struct {
-    range_start: u64,
-    range_end: u64,
+    range_start: usize,
+    range_end: usize,
 };
 
 const Pair = struct {
@@ -29,10 +29,10 @@ fn parseInput(allocator: std.mem.Allocator, input: []const u8) !std.ArrayList(Pa
         var b = elves.next().?;
         var a_tokens = std.mem.tokenize(u8, a, "-");
         var b_tokens = std.mem.tokenize(u8, b, "-");
-        var a_start = try std.fmt.parseInt(u64, a_tokens.next().?, 10);
-        var a_end = try std.fmt.parseInt(u64, a_tokens.next().?, 10);
-        var b_start = try std.fmt.parseInt(u64, b_tokens.next().?, 10);
-        var b_end = try std.fmt.parseInt(u64, b_tokens.next().?, 10);
+        var a_start = try std.fmt.parseInt(usize, a_tokens.next().?, 10);
+        var a_end = try std.fmt.parseInt(usize, a_tokens.next().?, 10);
+        var b_start = try std.fmt.parseInt(usize, b_tokens.next().?, 10);
+        var b_end = try std.fmt.parseInt(usize, b_tokens.next().?, 10);
         var elf_a = Elf{ .range_start = a_start, .range_end = a_end };
         var elf_b = Elf{ .range_start = b_start, .range_end = b_end };
         var pair = Pair{ .a = elf_a, .b = elf_b };
@@ -63,10 +63,10 @@ fn pairHasAnyOverlap(p: *const Pair) bool {
     }
 }
 
-pub fn partA(allocator: std.mem.Allocator) !u64 {
+pub fn partA(allocator: std.mem.Allocator) !usize {
     var input_str = comptime inputText();
     var parsed_input = try parseInput(allocator, input_str);
-    var sum: u64 = 0;
+    var sum: usize = 0;
     for (parsed_input.toOwnedSlice()) |pair| {
         if (pairHasEntireOverlap(&pair)) {
             sum += 1;
@@ -75,10 +75,10 @@ pub fn partA(allocator: std.mem.Allocator) !u64 {
     return sum;
 }
 
-pub fn partB(allocator: std.mem.Allocator) !u64 {
+pub fn partB(allocator: std.mem.Allocator) !usize {
     var input_str = comptime inputText();
     var parsed_input = try parseInput(allocator, input_str);
-    var sum: u64 = 0;
+    var sum: usize = 0;
     for (parsed_input.toOwnedSlice()) |pair| {
         if (pairHasAnyOverlap(&pair)) {
             sum += 1;

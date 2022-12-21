@@ -149,7 +149,7 @@ fn run(allocator: std.mem.Allocator, input: []const u8, shell: *Shell) !void {
     output_buffer.clearAndFree();
 }
 
-pub fn partA(allocator: std.mem.Allocator) !u64 {
+pub fn partA(allocator: std.mem.Allocator) !usize {
     var shell: Shell = Shell.init(allocator);
     const input = comptime inputText();
     try run(allocator, input, &shell);
@@ -167,7 +167,7 @@ pub fn partA(allocator: std.mem.Allocator) !u64 {
     return sum;
 }
 
-pub fn partB(allocator: std.mem.Allocator) !u64 {
+pub fn partB(allocator: std.mem.Allocator) !usize {
     var shell: Shell = Shell.init(allocator);
     const input = comptime inputText();
     try run(allocator, input, &shell);

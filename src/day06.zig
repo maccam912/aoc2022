@@ -22,7 +22,7 @@ fn allUnique(input: []const u8) bool {
     return true;
 }
 
-fn findStartOfPacketIndex(input: []const u8, length: usize) ?u64 {
+fn findStartOfPacketIndex(input: []const u8, length: usize) ?usize {
     var i: usize = length - 1;
     while (i < input.len) : (i += 1) {
         var l = input[i - (length - 1) .. i + 1];
@@ -33,12 +33,12 @@ fn findStartOfPacketIndex(input: []const u8, length: usize) ?u64 {
     return null;
 }
 
-pub fn partA() !u64 {
+pub fn partA() !usize {
     var input = comptime inputText();
     return findStartOfPacketIndex(input, 4).? + 1;
 }
 
-pub fn partB() !u64 {
+pub fn partB() !usize {
     var input = comptime inputText();
     return findStartOfPacketIndex(input, 14).? + 1;
 }

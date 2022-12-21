@@ -15,7 +15,7 @@ pub const Context = struct {
     iter: u32,
     count: u32,
     state: State,
-    nanoseconds: u64,
+    nanoseconds: usize,
 
     const HeatingTime = time.ns_per_s / 2;
     const RunTime = time.ns_per_s / 2;
@@ -103,7 +103,7 @@ pub const Context = struct {
         }
     }
 
-    pub fn averageTime(self: *Context, unit: u64) f32 {
+    pub fn averageTime(self: *Context, unit: usize) f32 {
         assert(self.state == .Finished);
         return @intToFloat(f32, self.nanoseconds / unit) / @intToFloat(f32, self.iter);
     }
@@ -113,7 +113,7 @@ pub fn benchmark(name: []const u8, comptime f: BenchFn) void {
     var ctx = Context.init();
     f(&ctx);
 
-    var unit: u64 = undefined;
+    var unit: usize = undefined;
     var unit_name: []const u8 = undefined;
     const avg_time = ctx.averageTime(1);
     assert(avg_time >= 0);
@@ -155,7 +155,7 @@ pub fn benchmarkArgs(comptime name: []const u8, comptime f: anytype, comptime ar
         var ctx = Context.init();
         f(&ctx, a);
 
-        var unit: u64 = undefined;
+        var unit: usize = undefined;
         var unit_name: []const u8 = undefined;
         const avg_time = ctx.averageTime(1);
         assert(avg_time >= 0);
@@ -242,7 +242,7 @@ test "benchmarkArgs types" {
     }.benchMin;
 
     std.debug.warn("\n");
-    benchmarkArgs("Min", benchMin, [_]type{ u32, u64 });
+    benchmarkArgs("Min", benchMin, [_]type{ u32, usize });
 }
 
 test "benchmark custom timing" {

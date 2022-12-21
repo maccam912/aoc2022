@@ -140,7 +140,7 @@ fn runRound(l: []Monkey, div_worry_level: bool, modulo: isize) !void {
     }
 }
 
-pub fn partA(allocator: std.mem.Allocator) !u64 {
+pub fn partA(allocator: std.mem.Allocator) !usize {
     const MonkeyList = std.ArrayList(Monkey);
     var monkey_list = MonkeyList.init(allocator);
     defer monkey_list.deinit();
@@ -173,7 +173,7 @@ pub fn partA(allocator: std.mem.Allocator) !u64 {
     return a * b;
 }
 
-pub fn partB(allocator: std.mem.Allocator) !u64 {
+pub fn partB(allocator: std.mem.Allocator) !usize {
     const MonkeyList = std.ArrayList(Monkey);
     var monkey_list = MonkeyList.init(allocator);
     defer monkey_list.deinit();

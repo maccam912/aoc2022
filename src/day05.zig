@@ -14,8 +14,8 @@ fn inputText() []const u8 {
 }
 
 const Point = struct {
-    x: i64,
-    y: i64,
+    x: isize,
+    y: isize,
 };
 
 fn charGrid(allocator: std.mem.Allocator, input: []const u8) !std.AutoHashMap(Point, u8) {
@@ -24,11 +24,11 @@ fn charGrid(allocator: std.mem.Allocator, input: []const u8) !std.AutoHashMap(Po
     var parts = std.mem.split(u8, input, "\n\n");
     var stacks = parts.next().?;
 
-    var line: i64 = 0;
+    var line: isize = 0;
 
     var stack_lines = std.mem.split(u8, stacks, "\n");
     while (stack_lines.next()) |stack_line| {
-        var col: i64 = 0;
+        var col: isize = 0;
         for (stack_line) |c| {
             try result.put(Point{ .x = col, .y = line }, c);
             col += 1;
@@ -48,7 +48,7 @@ fn constructState(allocator: std.mem.Allocator, char_grid: *std.AutoHashMap(Poin
     }
     var result = State{ .stacks = stacks };
 
-    var max_row: i64 = 0;
+    var max_row: isize = 0;
     var key_iter = char_grid.keyIterator();
     while (key_iter.next()) |key| {
         if (key.y > max_row) {
@@ -58,8 +58,8 @@ fn constructState(allocator: std.mem.Allocator, char_grid: *std.AutoHashMap(Poin
 
     // starting at max_row and working backward to 0
     while (max_row >= 0) : (max_row -= 1) {
-        var col: i64 = 0;
-        var actual_col: i64 = 4 * col + 1;
+        var col: isize = 0;
+        var actual_col: isize = 4 * col + 1;
         while (char_grid.get(Point{ .x = actual_col, .y = max_row })) |value| {
             if (value != 32) {
                 try stacks.items[@intCast(usize, col)].append(value);
@@ -82,13 +82,13 @@ fn operateA(state: *State, input: []const u8) !void {
         var count_parts = std.mem.split(u8, parts.next().?, "move ");
         _ = count_parts.next().?;
         var count_part = count_parts.next().?;
-        var count_num: u64 = try std.fmt.parseInt(u64, count_part, 10);
+        var count_num: usize = try std.fmt.parseInt(usize, count_part, 10);
         var x_to_y = parts.next().?;
         var x_y_parts = std.mem.split(u8, x_to_y, " to ");
         var from = try std.fmt.parseInt(usize, x_y_parts.next().?, 10) - 1;
         var to = try std.fmt.parseInt(usize, x_y_parts.next().?, 10) - 1;
 
-        var i: u64 = 0;
+        var i: usize = 0;
         while (i < count_num) : (i += 1) {
             var v = state.stacks.items[from].pop();
             try state.stacks.items[to].append(v);
@@ -106,7 +106,7 @@ fn operateB(allocator: std.mem.Allocator, state: *State, input: []const u8) !voi
         var count_parts = std.mem.split(u8, parts.next().?, "move ");
         _ = count_parts.next().?;
         var count_part = count_parts.next().?;
-        var count_num: u64 = try std.fmt.parseInt(u64, count_part, 10);
+        var count_num: usize = try std.fmt.parseInt(usize, count_part, 10);
         var x_to_y = parts.next().?;
         var x_y_parts = std.mem.split(u8, x_to_y, " to ");
         var from = try std.fmt.parseInt(usize, x_y_parts.next().?, 10) - 1;
@@ -114,7 +114,7 @@ fn operateB(allocator: std.mem.Allocator, state: *State, input: []const u8) !voi
         var tmp = std.ArrayList(u8).init(allocator);
         var count_two = count_num;
 
-        var i: u64 = 0;
+        var i: usize = 0;
         while (i < count_num) : (i += 1) {
             var v: u8 = state.stacks.items[from].pop();
             try tmp.append(v);

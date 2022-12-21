@@ -149,7 +149,7 @@ fn getScenicScore(coord: Coord, grid: *std.AutoHashMap(Coord, Tree), max_row: us
     return view_north * view_south * view_east * view_west;
 }
 
-pub fn partA(allocator: std.mem.Allocator) !u64 {
+pub fn partA(allocator: std.mem.Allocator) !usize {
     const input = comptime inputText();
     var grid = try parseInput(allocator, input);
     var max = getGridMax(&grid);
@@ -170,7 +170,7 @@ pub fn partA(allocator: std.mem.Allocator) !u64 {
     return sum;
 }
 
-pub fn partB(allocator: std.mem.Allocator) !u64 {
+pub fn partB(allocator: std.mem.Allocator) !usize {
     const input = comptime inputText();
     var grid = try parseInput(allocator, input);
     var max = getGridMax(&grid);

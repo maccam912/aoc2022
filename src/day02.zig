@@ -30,9 +30,9 @@ fn parseGames(allocator: std.mem.Allocator, input: []const u8) !std.ArrayList(Ga
     return list;
 }
 
-fn scoreA(games: *std.ArrayList(Game)) u64 {
+fn scoreA(games: *std.ArrayList(Game)) usize {
     var games_slice = games.toOwnedSlice();
-    var my_score: u64 = 0;
+    var my_score: usize = 0;
     for (games_slice) |g| {
         var game_score = g.me;
         if (g.elf == g.me) {
@@ -50,10 +50,10 @@ fn scoreA(games: *std.ArrayList(Game)) u64 {
     return my_score;
 }
 
-fn scoreB(games: *std.ArrayList(Game)) u64 {
+fn scoreB(games: *std.ArrayList(Game)) usize {
     var games_slice = games.toOwnedSlice();
-    var my_score: u64 = 0;
-    var me: u64 = 0;
+    var my_score: usize = 0;
+    var me: usize = 0;
     for (games_slice) |g| {
         if (g.me == 2) {
             me = g.elf;
@@ -90,14 +90,14 @@ fn scoreB(games: *std.ArrayList(Game)) u64 {
     return my_score;
 }
 
-pub fn partA(allocator: std.mem.Allocator) !u64 {
+pub fn partA(allocator: std.mem.Allocator) !usize {
     const input = comptime inputText();
     var games_a = try parseGames(allocator, input);
     var my_score = scoreA(&games_a);
     return my_score;
 }
 
-pub fn partB(allocator: std.mem.Allocator) !u64 {
+pub fn partB(allocator: std.mem.Allocator) !usize {
     const input = comptime inputText();
     var games_b = try parseGames(allocator, input);
     var my_score = scoreB(&games_b);
