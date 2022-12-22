@@ -1,5 +1,6 @@
 const std = @import("std");
 const constants = @import("constants.zig");
+const trace = @import("tracy.zig").trace;
 
 fn inputText() []const u8 {
     if (constants.TESTING) {
@@ -81,6 +82,8 @@ fn resolve(name: []const u8, tree: *std.StringHashMap(Node)) !i64 {
 }
 
 pub fn partA(allocator: std.mem.Allocator) !i64 {
+    const tracy = trace(@src());
+    defer tracy.end();
     const input = comptime inputText();
     var parsed = try parseInput(allocator, input);
     var resolved = try resolve("root", &parsed);
@@ -89,6 +92,8 @@ pub fn partA(allocator: std.mem.Allocator) !i64 {
 }
 
 pub fn partB(allocator: std.mem.Allocator) !i64 {
+    const tracy = trace(@src());
+    defer tracy.end();
     const input = comptime inputText();
     var parsed = try parseInput(allocator, input);
     var l = parsed.get("root").?.l.?;
