@@ -25,14 +25,20 @@ const Grid = struct {
     tiles: std.AutoHashMap(Coord, Tile),
 
     fn init(alloc: std.mem.Allocator) Grid {
+        // const tracy = trace(@src());
+        // defer tracy.end();
         return Grid{ .tiles = std.AutoHashMap(Coord, Tile).init(alloc) };
     }
 
     fn deinit(self: *Grid) void {
+        // const tracy = trace(@src());
+        // defer tracy.end();
         self.tiles.deinit();
     }
 
     fn get(self: *Grid, row: isize, col: isize) Tile {
+        // const tracy = trace(@src());
+        // defer tracy.end();
         if (self.tiles.get(Coord{ .row = row, .col = col }) != null) {
             return self.tiles.get(Coord{ .row = row, .col = col }).?;
         }
@@ -42,6 +48,8 @@ const Grid = struct {
     }
 
     fn parse(self: *Grid, input: []const u8) ![]const u8 {
+        // const tracy = trace(@src());
+        // defer tracy.end();
         // Will parse the grid, and return the instructions to be parsed by agent
         var parts = std.mem.split(u8, input, "\n\n");
         var grid = parts.next().?;
@@ -70,6 +78,8 @@ const Grid = struct {
     }
 
     fn startingCoord(self: *Grid) Coord {
+        // const tracy = trace(@src());
+        // defer tracy.end();
         var col: isize = 0;
         while (true) {
             if (self.get(0, col) == Tile.open) {
@@ -86,6 +96,8 @@ const Agent = struct {
     instructions: []const u8,
 
     fn init(grid: *Grid, instructions: []const u8) Agent {
+        // const tracy = trace(@src());
+        // defer tracy.end();
         return Agent{
             .loc = grid.startingCoord(),
             .dir = 0,
@@ -94,6 +106,8 @@ const Agent = struct {
     }
 
     fn getNextInt(self: *Agent) !usize {
+        // const tracy = trace(@src());
+        // defer tracy.end();
         var i: usize = 0;
         while (i < self.instructions.len and self.instructions[i] != 'L' and self.instructions[i] != 'R') : (i += 1) {}
         var int_part = self.instructions[0..i];
@@ -103,22 +117,26 @@ const Agent = struct {
     }
 
     fn getNextTurn(self: *Agent) u8 {
+        // const tracy = trace(@src());
+        // defer tracy.end();
         const c = self.instructions[0];
         self.instructions = self.instructions[1..];
         return c;
     }
 
     fn followInstructions(self: *Agent, grid: *Grid, part_b: bool) !void {
+        // const tracy = trace(@src());
+        // defer tracy.end();
         while (self.instructions.len > 0) {
             var step_count = try self.getNextInt();
-            std.log.debug("Moving {} steps forward", .{step_count});
+            // std.log.debug("Moving {} steps forward", .{step_count});
             var i: usize = 0;
             while (i < step_count) : (i += 1) {
                 self.moveForward(grid, part_b);
             }
             if (self.instructions.len > 0) {
                 var turn = self.getNextTurn();
-                std.log.debug("Turning {c}", .{turn});
+                // std.log.debug("Turning {c}", .{turn});
                 if (turn == 'R') {
                     _ = @addWithOverflow(u2, self.dir, 1, &self.dir);
                 } else if (turn == 'L') {
@@ -129,6 +147,8 @@ const Agent = struct {
     }
 
     fn moveForward(self: *Agent, grid: *Grid, part_b: bool) void {
+        // const tracy = trace(@src());
+        // defer tracy.end();
         var next_coord: Coord = switch (self.dir) {
             0 => Coord{ .row = self.loc.row, .col = self.loc.col + 1 },
             1 => Coord{ .row = self.loc.row + 1, .col = self.loc.col },
@@ -150,6 +170,8 @@ const Agent = struct {
     }
 
     fn onEdge(self: *Agent, row_low: isize, row_high: isize, col_low: isize, col_high: isize, dir: u2) bool {
+        // const tracy = trace(@src());
+        // defer tracy.end();
         if (self.loc.row >= row_low and self.loc.row <= row_high and self.loc.col >= col_low and self.loc.col <= col_high and self.dir == dir) {
             return true;
         } else {
@@ -158,6 +180,8 @@ const Agent = struct {
     }
 
     fn dest(self: *Agent, new_row: isize, new_col: isize, new_dir: u2, grid: *Grid) void {
+        // const tracy = trace(@src());
+        // defer tracy.end();
         if (grid.get(new_row, new_col) == Tile.open) {
             self.dir = new_dir;
             self.loc.row = new_row;
@@ -166,7 +190,9 @@ const Agent = struct {
     }
 
     fn crossCornerTest(self: *Agent, grid: *Grid) void {
-        std.log.debug("Crossing corner!: {any} {}", .{ self.loc, self.dir });
+        // const tracy = trace(@src());
+        // defer tracy.end();
+        // std.log.debug("Crossing corner!: {any} {}", .{ self.loc, self.dir });
         // 1 north
         if (self.onEdge(0, 0, 8, 11, 3)) {
             // going to 2 north
@@ -240,11 +266,13 @@ const Agent = struct {
             std.log.err("Unreachable!", .{});
             unreachable;
         }
-        std.log.debug("Crossed corner!: {any}, {}", .{ self.loc, self.dir });
+        // std.log.debug("Crossed corner!: {any}, {}", .{ self.loc, self.dir });
     }
 
     fn crossCorner(self: *Agent, grid: *Grid) void {
-        std.log.debug("Crossing corner!: {any} {}", .{ self.loc, self.dir });
+        // const tracy = trace(@src());
+        // defer tracy.end();
+        // std.log.debug("Crossing corner!: {any} {}", .{ self.loc, self.dir });
         // 1 north
         if (self.onEdge(0, 0, 50, 99, 3)) {
             // going to 6 west
@@ -321,6 +349,8 @@ const Agent = struct {
     }
 
     fn wrapAround(self: *Agent, grid: *Grid) void {
+        // const tracy = trace(@src());
+        // defer tracy.end();
         while (grid.get(self.loc.row, self.loc.col) != Tile.void) {
             switch (self.dir) {
                 0 => self.loc.col -= 1,
@@ -340,6 +370,8 @@ const Agent = struct {
 };
 
 pub fn partA(allocator: std.mem.Allocator) !i64 {
+    // const tracy = trace(@src());
+    // defer tracy.end();
     const input = comptime inputText();
     var grid = Grid.init(allocator);
     defer grid.deinit();
@@ -351,6 +383,8 @@ pub fn partA(allocator: std.mem.Allocator) !i64 {
 }
 
 pub fn partB(allocator: std.mem.Allocator) !i64 {
+    // const tracy = trace(@src());
+    // defer tracy.end();
     const input = comptime inputText();
     var grid = Grid.init(allocator);
     defer grid.deinit();
