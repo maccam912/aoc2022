@@ -204,7 +204,7 @@ fn run(allocator: std.mem.Allocator, elves: *std.ArrayList(Elf)) !void {
                 elf.*.loc = elf.*.proposal.?;
             }
         }
-        // try debug(elves);
+        try debug(elves);
         var elf_coords_2: std.AutoHashMap(Coord, void) = try elfCoords(allocator, elves);
         defer elf_coords_2.deinit();
         std.log.debug("Empty tiles: {}", .{emptyTiles(&elf_coords_2)});
@@ -266,7 +266,7 @@ fn runB(allocator: std.mem.Allocator, elves: *std.ArrayList(Elf)) !usize {
                 prev_num_moved += 1;
             }
         }
-        // try debug(elves);
+        try debug(elves);
         var elf_coords_2: std.AutoHashMap(Coord, void) = try elfCoords(allocator, elves);
         defer elf_coords_2.deinit();
         std.log.debug("Empty tiles: {}", .{emptyTiles(&elf_coords_2)});

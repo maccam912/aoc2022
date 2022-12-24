@@ -22,6 +22,7 @@ const day20 = @import("day20.zig");
 const day21 = @import("day21.zig");
 const day22 = @import("day22.zig");
 const day23 = @import("day23.zig");
+const day24 = @import("day24.zig");
 // const trace = @import("tracy.zig").trace;
 
 pub fn main() !void {
@@ -199,11 +200,19 @@ pub fn main() !void {
     // try stdout.print("Day 22 Part B = {any}\n", .{b22});
     // defer arena.deinit();
 
+    // arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    // allocator = arena.allocator();
+    // var a23: u64 = try day23.partA(allocator);
+    // var b23: u64 = try day23.partB(allocator);
+    // try stdout.print("Day 23 Part A = {any}\n", .{a23});
+    // try stdout.print("Day 23 Part B = {any}\n", .{b23});
+    // defer arena.deinit();
+
     arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     allocator = arena.allocator();
-    var a23: u64 = try day23.partA(allocator);
-    var b23: u64 = try day23.partB(allocator);
-    try stdout.print("Day 23 Part A = {any}\n", .{a23});
-    try stdout.print("Day 23 Part B = {any}\n", .{b23});
+    var a24: u64 = try day24.partA(allocator);
+    var b24: u64 = try day24.partB(allocator);
+    try stdout.print("Day 24 Part A = {any}\n", .{a24});
+    try stdout.print("Day 24 Part B = {any}\n", .{b24});
     defer arena.deinit();
 }
