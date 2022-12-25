@@ -10,7 +10,7 @@ fn inputText() []const u8 {
     }
 }
 
-const MAX_DEPTH=100;
+const MAX_DEPTH=10000;
 
 const Blizzard = struct {
     row: usize,
@@ -129,7 +129,7 @@ const Valley = struct {
 
     fn debug(self: *const Valley) void {
         var area: usize = (self.width + 1) * self.height;
-        var debugstr: [1000]u8 = std.mem.zeroes([1000]u8);
+        var debugstr: [10000]u8 = std.mem.zeroes([10000]u8);
         var i: usize = 0;
         while (i < area) : (i += 1) {
             debugstr[i] = '.';
@@ -169,7 +169,7 @@ const Valley = struct {
                 0 => bliz.*.col += 1,
                 1 => bliz.*.row += 1,
                 2 => bliz.*.col -= 1,
-                3 => bliz.*.col -= 1,
+                3 => bliz.*.row -= 1,
             }
 
             if (bliz.col == self.width - 1) {
@@ -208,99 +208,89 @@ const Valley = struct {
         }
     }
 
-    fn solve(self: *Valley, row: usize, col: usize, curr_weight: usize, global_best: *usize, visited: *std.AutoHashMap([3]usize, Node)) !Node {
-        std.log.debug("Calling solve. row {} col {} Timestep is {}, weight is {}, global best is {}", .{row, col, self.t, curr_weight, global_best.*});
+    fn solve(self: *Valley) !void {
 
-        var already_seen = visited.get([3]usize{row, col, self.t});
-        if (already_seen != null) {
-            return already_seen.?;
-        }
+        var leaves = std.AutoHashMap(Node, void).init(self.allocator);
+        defer leaves.deinit();
+        var visited = std.AutoHashMap(Node, void).init(self.allocator);
+        defer visited.deinit();
+        var new_leaves = std.AutoHashMap(Node, void).init(self.allocator);
+        defer new_leaves.deinit();
 
-        if (row == self.height-1 and col == self.exit_col) {
-            std.log.debug("At an exit! curr_weight {}", .{curr_weight});
-            if (curr_weight < global_best.*) {
-                global_best.* = curr_weight;
-            }
-            var retval = Node{.row = row, .col = col, .t = self.t, .weight = curr_weight};
-            std.log.debug("Returning {any}", .{retval});
-            std.process.exit(0);
-            try visited.put([3]usize{row, col, self.t}, retval);
-            return retval;
-        }
+        try leaves.put(Node{.row = 0, .col = self.entrance_col, .t = 0, .weight = 0}, {});
 
-        _ = self.step();
-        var next_blizzard_squares = try self.getBlizzardSquares();
+        var done: bool = false;
+        while (!done and self.t < MAX_DEPTH) {
+            _ = self.step();
+            // self.debug();
+            std.log.debug("Timestep {}", .{self.t});
+            var next_blizzard_squares = try self.getBlizzardSquares();
+            defer next_blizzard_squares.deinit();
 
-        var best_node = Node{.row = row, .col = col, .t = self.t, .weight = std.math.maxInt(usize)-2};
-        var best_possible_score = curr_weight+((self.height-1)-row)+std.math.absCast(@intCast(isize, self.exit_col)-@intCast(isize, col));
+            // var it_debug = leaves.keyIterator();
+            // while (it_debug.next()) |item| {
+            //     std.log.debug("leaf: {any}", .{item});
+            // }
+            
+            var it = leaves.keyIterator();
+            while (it.next()) |node| {
+                var row = node.row;
+                var col = node.col;
 
-        if (row < self.height-2 or (row < self.height-1 and col == self.exit_col)) {
-            // Sometimes open space below, check down one
-            var down_square = [2]usize{row+1, col};
-            if (!next_blizzard_squares.contains(down_square)) {
-                // Square is open next step! 
-                var this_clone: Valley = try self.clone();
-                var best_down_path = try this_clone.solve(row+1, col, curr_weight+1, global_best, visited);
-                this_clone.deinit();
-                if (best_down_path.weight < best_node.weight) {
-                    best_node = best_down_path;
+                if (row == self.height-1 and col == self.exit_col) {
+                    //Done!
+                    done = true;
+                    break;
                 }
-            }
-        }
 
-        if (best_node.weight+1 > best_possible_score and col < self.width-2) {
-            var right_square = [2]usize{row, col+1};
-            if (!next_blizzard_squares.contains(right_square)) {
-                // Square is open next step! 
-                var this_clone: Valley = try self.clone();
-                var best_right_path = try this_clone.solve(row, col+1, curr_weight+1, global_best, visited);
-                this_clone.deinit();
-                if (best_right_path.weight < best_node.weight) {
-                    best_node = best_right_path;
+                // Down
+                if (row < self.height-2 or (row < self.height-1 and col == self.exit_col)) {
+                    var down_square = [2]usize{row+1, col};
+                    if (!next_blizzard_squares.contains(down_square)) {
+                        try new_leaves.put(Node{.row = row+1, .col = col, .t = self.t, .weight = node.weight+1}, {});
+                    }
                 }
-            }
-        }
 
-        if (best_node.weight+1 > best_possible_score and col > 1) {
-            var left_square = [2]usize{row, col-1};
-            if (!next_blizzard_squares.contains(left_square)) {
-                // Square is open next step! 
-                var this_clone: Valley = try self.clone();
-                var best_left_path = try this_clone.solve(row, col-1, curr_weight+1, global_best, visited);
-                this_clone.deinit();
-                if (best_left_path.weight < best_node.weight) {
-                    best_node = best_left_path;
+                // Right
+                if (col < self.width-2 and (row > 0 and row < self.height-1)) {
+                    var right_square = [2]usize{row, col+1};
+                    if (!next_blizzard_squares.contains(right_square)) {
+                        try new_leaves.put(Node{.row = row, .col = col+1, .t = self.t, .weight = node.weight+1}, {});
+                    }
                 }
-            }
-        }
 
-        if (best_node.weight+1 > best_possible_score and row > 1 or (row > 0 and col == self.entrance_col)) {
-            var up_square = [2]usize{row-1, col};
-            if (!next_blizzard_squares.contains(up_square)) {
-                // Square is open next step! 
-                var this_clone: Valley = try self.clone();
-                var best_up_path = try this_clone.solve(row-1, col, curr_weight+1, global_best, visited);
-                this_clone.deinit();
-                if (best_up_path.weight < best_node.weight) {
-                    best_node = best_up_path;
+                // Left
+                if (col > 1 and (row > 0 and row < self.height-1)) {
+                    var left_square = [2]usize{row, col-1};
+                    if (!next_blizzard_squares.contains(left_square)) {
+                        try new_leaves.put(Node{.row = row, .col = col-1, .t = self.t, .weight = node.weight+1}, {});
+                    }
                 }
-            }
-        }
 
-        if (best_node.weight+2 > best_possible_score and true) { // Check current square
-            if (!next_blizzard_squares.contains([2]usize{row, col})) {
-                // Square is open next step! 
-                var this_clone: Valley = try self.clone();
-                var best_curr_path = try this_clone.solve(row, col, curr_weight+1, global_best, visited);
-                this_clone.deinit();
-                if (best_curr_path.weight < best_node.weight) {
-                    best_node = best_curr_path;
+                // Up
+                if (row > 1 or (row > 0 and col == self.entrance_col)) {
+                    var up_square = [2]usize{row-1, col};
+                    if (!next_blizzard_squares.contains(up_square)) {
+                        try new_leaves.put(Node{.row = row-1, .col=col, .t = self.t, .weight = node.weight+1}, {});
+                    }
                 }
-            }
-        }
 
-        try visited.put([3]usize{row, col, self.t}, best_node);
-        return best_node;
+                // Same
+                if (true) {
+                    if (!next_blizzard_squares.contains([2]usize{row, col})) {
+                        try new_leaves.put(Node{.row = row, .col=col, .t = self.t, .weight = node.weight+1}, {});
+                    }
+                }
+                try visited.put(node.*, {});
+            }
+            // Went through all current ones. Empty out leaves, move new_leaves into leaves, empty new_leaves
+            leaves.clearAndFree();
+            var new_leaves_it = new_leaves.keyIterator();
+            while (new_leaves_it.next()) |new_leaf| {
+                try leaves.put(new_leaf.*, {});
+            }
+            new_leaves.clearAndFree();
+        }
     }
 };
 
@@ -313,12 +303,8 @@ pub fn partA(allocator: std.mem.Allocator) !usize {
 
     var already_visited = std.AutoHashMap([3]usize, Node).init(allocator);
     defer already_visited.deinit();
-
-    var global_best: usize = MAX_DEPTH;
-    var solved = try valley.solve(0, valley.entrance_col, 0, &global_best, &already_visited);
-    std.log.debug("Solved: {any}", .{solved});
-
-    return solved.weight;
+    try valley.solve();
+    return valley.t-1;
 }
 
 pub fn partB(allocator: std.mem.Allocator) !usize {
