@@ -208,8 +208,9 @@ pub fn main() !void {
     // try stdout.print("Day 23 Part B = {any}\n", .{b23});
     // defer arena.deinit();
 
-    arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    allocator = arena.allocator();
+    // arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    allocator = gpa.allocator();
     var a24: u64 = try day24.partA(allocator);
     var b24: u64 = try day24.partB(allocator);
     try stdout.print("Day 24 Part A = {any}\n", .{a24});
