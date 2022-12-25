@@ -10,7 +10,7 @@ fn inputText() []const u8 {
     }
 }
 
-const MAX_DEPTH=10000;
+const MAX_DEPTH = 10000;
 
 const Blizzard = struct {
     row: usize,
@@ -137,10 +137,10 @@ const Valley = struct {
                 // First row
                 debugstr[i] = '#';
             }
-            if (i >= (self.width+1)*(self.height-1)) {
+            if (i >= (self.width + 1) * (self.height - 1)) {
                 debugstr[i] = '#';
             }
-            var exit_loc = (self.width+1)*(self.height-1)+self.exit_col;
+            var exit_loc = (self.width + 1) * (self.height - 1) + self.exit_col;
             debugstr[exit_loc] = '.';
             if (i % (self.width + 1) == 0 or i % (self.width + 1) == self.width - 1) {
                 debugstr[i] = '#';
@@ -184,31 +184,34 @@ const Valley = struct {
         }
         self.t += 1;
     }
-    
+
     fn getBlizzardSquares(self: *const Valley) !std.AutoHashMap([2]usize, void) {
         var result = std.AutoHashMap([2]usize, void).init(self.allocator);
         for (self.blizzards.items) |bliz| {
-            try result.put([2]usize{bliz.row, bliz.col}, {});
+            try result.put([2]usize{ bliz.row, bliz.col }, {});
         }
         return result;
     }
 
     fn updateVisited(visited: *std.AutoHashMap([3]usize, Node), row: usize, col: usize, t: usize, n: Node) !void {
-        if (visited.get([3]usize{row, col, t})) |existing| {
+        if (visited.get([3]usize{ row, col, t })) |existing| {
             if (n.weight < existing.weight) {
-                try visited.put([3]usize{row, col, t}, n);
+                try visited.put([3]usize{ row, col, t }, n);
                 return;
             } else {
                 // Better one already there
                 return;
             }
         } else {
-            try visited.put([3]usize{row, col, t}, n);
+            try visited.put([3]usize{ row, col, t }, n);
             return;
         }
     }
 
-    fn solve(self: *Valley) !void {
+    fn solve(self: *Valley, reverse: bool, start_step: usize) !void {
+        while (self.t < start_step) {
+            self.step();
+        }
 
         var leaves = std.AutoHashMap(Node, void).init(self.allocator);
         defer leaves.deinit();
@@ -217,7 +220,11 @@ const Valley = struct {
         var new_leaves = std.AutoHashMap(Node, void).init(self.allocator);
         defer new_leaves.deinit();
 
-        try leaves.put(Node{.row = 0, .col = self.entrance_col, .t = 0, .weight = 0}, {});
+        if (!reverse) {
+            try leaves.put(Node{ .row = 0, .col = self.entrance_col, .t = 0, .weight = 0 }, {});
+        } else {
+            try leaves.put(Node{ .row = self.height - 1, .col = self.exit_col, .t = start_step, .weight = 0 }, {});
+        }
 
         var done: bool = false;
         while (!done and self.t < MAX_DEPTH) {
@@ -231,54 +238,58 @@ const Valley = struct {
             // while (it_debug.next()) |item| {
             //     std.log.debug("leaf: {any}", .{item});
             // }
-            
+
             var it = leaves.keyIterator();
             while (it.next()) |node| {
                 var row = node.row;
                 var col = node.col;
 
-                if (row == self.height-1 and col == self.exit_col) {
-                    //Done!
-                    done = true;
-                    break;
+                if (!reverse) {
+                    if (row == self.height - 1 and col == self.exit_col) {
+                        return;
+                    }
+                } else {
+                    if (row == 0 and col == self.entrance_col) {
+                        return;
+                    }
                 }
 
                 // Down
-                if (row < self.height-2 or (row < self.height-1 and col == self.exit_col)) {
-                    var down_square = [2]usize{row+1, col};
+                if (row < self.height - 2 or (row < self.height - 1 and col == self.exit_col)) {
+                    var down_square = [2]usize{ row + 1, col };
                     if (!next_blizzard_squares.contains(down_square)) {
-                        try new_leaves.put(Node{.row = row+1, .col = col, .t = self.t, .weight = node.weight+1}, {});
+                        try new_leaves.put(Node{ .row = row + 1, .col = col, .t = self.t, .weight = node.weight + 1 }, {});
                     }
                 }
 
                 // Right
-                if (col < self.width-2 and (row > 0 and row < self.height-1)) {
-                    var right_square = [2]usize{row, col+1};
+                if (col < self.width - 2 and (row > 0 and row < self.height - 1)) {
+                    var right_square = [2]usize{ row, col + 1 };
                     if (!next_blizzard_squares.contains(right_square)) {
-                        try new_leaves.put(Node{.row = row, .col = col+1, .t = self.t, .weight = node.weight+1}, {});
+                        try new_leaves.put(Node{ .row = row, .col = col + 1, .t = self.t, .weight = node.weight + 1 }, {});
                     }
                 }
 
                 // Left
-                if (col > 1 and (row > 0 and row < self.height-1)) {
-                    var left_square = [2]usize{row, col-1};
+                if (col > 1 and (row > 0 and row < self.height - 1)) {
+                    var left_square = [2]usize{ row, col - 1 };
                     if (!next_blizzard_squares.contains(left_square)) {
-                        try new_leaves.put(Node{.row = row, .col = col-1, .t = self.t, .weight = node.weight+1}, {});
+                        try new_leaves.put(Node{ .row = row, .col = col - 1, .t = self.t, .weight = node.weight + 1 }, {});
                     }
                 }
 
                 // Up
                 if (row > 1 or (row > 0 and col == self.entrance_col)) {
-                    var up_square = [2]usize{row-1, col};
+                    var up_square = [2]usize{ row - 1, col };
                     if (!next_blizzard_squares.contains(up_square)) {
-                        try new_leaves.put(Node{.row = row-1, .col=col, .t = self.t, .weight = node.weight+1}, {});
+                        try new_leaves.put(Node{ .row = row - 1, .col = col, .t = self.t, .weight = node.weight + 1 }, {});
                     }
                 }
 
                 // Same
                 if (true) {
-                    if (!next_blizzard_squares.contains([2]usize{row, col})) {
-                        try new_leaves.put(Node{.row = row, .col=col, .t = self.t, .weight = node.weight+1}, {});
+                    if (!next_blizzard_squares.contains([2]usize{ row, col })) {
+                        try new_leaves.put(Node{ .row = row, .col = col, .t = self.t, .weight = node.weight + 1 }, {});
                     }
                 }
                 try visited.put(node.*, {});
@@ -301,13 +312,19 @@ pub fn partA(allocator: std.mem.Allocator) !usize {
     defer valley.deinit();
     valley.debug();
 
-    var already_visited = std.AutoHashMap([3]usize, Node).init(allocator);
-    defer already_visited.deinit();
-    try valley.solve();
-    return valley.t-1;
+    try valley.solve(false, 0);
+    return valley.t - 1;
 }
 
 pub fn partB(allocator: std.mem.Allocator) !usize {
-    _ = allocator;
-    return 1;
+    const input = comptime inputText();
+    var nodes = std.AutoHashMap(Node, void).init(allocator);
+    var valley: Valley = try Valley.init(allocator, &nodes, input);
+    defer valley.deinit();
+    valley.debug();
+
+    try valley.solve(false, 0);
+    try valley.solve(true, valley.t);
+    try valley.solve(false, valley.t);
+    return valley.t - 1;
 }
